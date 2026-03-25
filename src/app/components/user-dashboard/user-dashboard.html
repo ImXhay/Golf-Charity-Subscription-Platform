@@ -1,124 +1,105 @@
-<div style="padding: 40px; max-width: 1100px; margin: 0 auto; color: white; font-family: 'Inter', sans-serif;">
+<div style="padding: clamp(16px, 5vw, 40px); max-width: 1200px; margin: 0 auto; color: #fff; font-family: 'Inter', sans-serif; box-sizing: border-box; background: #050505; min-height: 100vh;">
 
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+  <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 40px;">
     <div>
-      <h1 style="margin: 0; font-size: 2rem; font-weight: 800;">Welcome back, <span style="color: #00ffcc;">Player</span></h1>
-      <p style="color: #888; margin: 5px 0 0 0;">Track your impact and golf scores for this month's draw.</p>
+      <h1 style="margin: 0; font-size: 2.2rem; font-weight: 850; letter-spacing: -1px;">
+        Impact<span style="color: #00ffcc;">Draw.</span>
+      </h1>
+      <p style="color: #666; margin: 5px 0 0 0;">Welcome back, <span style="color: #fff;">{{ user?.email?.split('@')[0] }}</span></p>
     </div>
-    <button (click)="logout()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid #333; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='#222'" onmouseout="this.style.background='transparent'">
+    <button (click)="logout()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid #222; padding: 10px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s;">
       Sign Out
     </button>
   </div>
 
-  <div *ngIf="profileData() && !profileData().is_subscribed" 
-       style="background: linear-gradient(90deg, #635bff 0%, #00ffcc 100%); padding: 3px; border-radius: 20px; margin-bottom: 40px;">
-    <div style="background: #111; padding: 30px; border-radius: 17px; text-align: center;">
-      <h2 style="margin: 0 0 10px 0; color: white; font-size: 1.8rem;">Unlock Your Impact & Enter the Draw</h2>
-      <p style="color: #aaa; margin: 0 0 25px 0; font-size: 1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
-        You are currently on a restricted view. Subscribe to start submitting your golf scores, supporting your charity, and entering the monthly prize pool.
-      </p>
-      <button (click)="subscribeToPlatform()" [disabled]="isUpdatingSubscription()" 
-              style="background: #fff; color: #000; border: none; padding: 15px 40px; border-radius: 10px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.2s;">
-        {{ isUpdatingSubscription() ? 'Redirecting to Checkout...' : 'Subscribe Now' }}
-      </button>
-    </div>
-  </div>
-
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px;">
-    <div style="background: #1a1a1a; padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; overflow: hidden;">
-      <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #00ffcc;"></div>
-      <span style="color: #666; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Monthly Tickets</span>
-      <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 10px;">
-        <h2 style="margin: 0; font-size: 3rem; font-weight: 900;">{{ totalEntries() }}</h2>
-        <span style="color: #00ffcc; font-size: 0.9rem;">Entries</span>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px;">
+  
+  <div style="background: #111; padding: 25px; border-radius: 24px; border: 1px solid #222;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <p style="color: #00ffcc; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Active Tickets</p>
+        <h2 style="font-size: 3rem; margin: 5px 0;">{{ totalEntries() }}</h2>
       </div>
-      <p style="color: #555; margin: 10px 0 0 0; font-size: 0.85rem;">Based on your golf scores + 1 base entry.</p>
-    </div>
-
-    <div style="background: #1a1a1a; padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; overflow: hidden;">
-      <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #635bff;"></div>
-      <span style="color: #666; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Directing Impact To</span>
-      <h2 style="margin: 15px 0 5px 0; font-size: 1.4rem; color: #fff;">{{ selectedCharity()?.name || 'Selection Required' }}</h2>
-      <p style="color: #555; margin: 0; font-size: 0.85rem;">Changing lives through golf.</p>
-      <button (click)="scrollTo('charity-selector')" style="margin-top: 15px; background: transparent; color: #635bff; border: none; padding: 0; font-size: 0.85rem; font-weight: bold; cursor: pointer; text-decoration: underline;">Change Charity</button>
-    </div>
-
-    <div style="background: #1a1a1a; padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; overflow: hidden;">
-      <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #ffcc00;"></div>
-      <span style="color: #666; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Win Probability</span>
-      <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 10px;">
-        <h2 style="margin: 0; font-size: 3rem; font-weight: 900; color: #ffcc00;">{{ winOdds() }}%</h2>
+      <div style="text-align: right;">
+        <p style="color: #444; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Next Draw</p>
+        <p style="color: #fff; font-weight: bold; margin: 5px 0;">{{ drawStats().nextDraw }}</p>
       </div>
-      <p style="color: #555; margin: 10px 0 0 0; font-size: 0.85rem;">Your slice of the current prize pool.</p>
     </div>
+    <p style="color: #666; font-size: 0.85rem;">Entered in {{ drawStats().drawsEntered }} draws so far.</p>
   </div>
 
-  <div *ngIf="profileData()?.is_subscribed" style="background: #1a1a1a; padding: 25px; border-radius: 20px; border: 1px solid #333; border-left: 4px solid #ff007f; margin-bottom: 40px;">
-    <h3 style="margin-top: 0; color: #fff;">🏆 Submit Winner Proof</h3>
-    <p style="color: #888; font-size: 0.9rem;">If you were selected in a monthly draw, upload a screenshot of your scores to claim your prize.</p>
-    
-    <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px;">
-      <input type="file" (change)="onFileSelected($event)" accept="image/*" style="background: #111; color: #fff; padding: 10px; border: 1px solid #444; border-radius: 8px; flex-grow: 1;">
-      <button (click)="uploadProof()" [disabled]="!selectedFile || isUploading()" style="background: #ff007f; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-        {{ isUploading() ? 'Uploading...' : 'Submit Proof' }}
-      </button>
+  <div style="background: #111; padding: 25px; border-radius: 24px; border: 1px solid #222; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+    <div style="display: flex; justify-content: space-between;">
+      <div>
+        <p style="color: #635bff; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Subscription</p>
+        <p style="margin: 5px 0; font-weight: 900; font-size: 1.2rem;" 
+           [style.color]="profileData()?.is_subscribed ? '#00ffcc' : '#ff4444'">
+          {{ profileData()?.is_subscribed ? 'ACTIVE' : 'INACTIVE' }}
+        </p>
+        <p style="color: #444; font-size: 0.75rem;">Renews: {{ subStatus().renewalDate }}</p>
+      </div>
+      <div style="text-align: right;">
+        <p style="color: #ffcc00; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Total Won</p>
+        <p style="margin: 5px 0; font-size: 1.5rem; font-weight: 900;">${{ winnings().totalWon }}</p>
+        <p style="color: #444; font-size: 0.7rem;">{{ winnings().paymentStatus }}</p>
+      </div>
     </div>
-    <div *ngIf="uploadMsg()" style="margin-top: 10px; color: #00ffcc; font-size: 0.85rem;">{{ uploadMsg() }}</div>
+
+    <button *ngIf="!profileData()?.is_subscribed" 
+            (click)="subscribeToPlatform()"
+            [disabled]="isUpdatingSubscription()"
+            style="margin-top: 20px; width: 100%; padding: 12px; background: #635bff; color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;">
+      {{ isUpdatingSubscription() ? 'Opening Stripe...' : 'Subscribe to Play' }}
+    </button>
   </div>
 
-  <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px;">
+</div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr)); gap: 25px; margin-bottom: 40px;">
     
-    <div style="background: #141414; padding: 30px; border-radius: 20px; border: 1px solid #333;">
-      <h3 style="margin-top: 0;">Submit New Golf Score</h3>
-      <p style="color: #888; font-size: 0.9rem;">Input your score (1-45) to earn more raffle tickets.</p>
+    <div style="background: #111; padding: 35px; border-radius: 24px; border: 1px solid #222; box-sizing: border-box;">
+      <h3 style="margin: 0 0 8px 0; font-size: 1.3rem;">Submit Golf Score</h3>
+      <p style="color: #666; margin-bottom: 25px; font-size: 0.9rem;">Input score (1-45) to earn tickets.</p>
       
-      <div style="margin-top: 25px;">
-        <input type="number" [(ngModel)]="currentScore" 
-               [disabled]="!profileData()?.is_subscribed"
-               placeholder="{{ profileData()?.is_subscribed ? 'Enter Score' : '🔒 Subscription Required' }}" 
-               style="width: 100%; padding: 15px; background: #1a1a1a; border: 1px solid #444; border-radius: 10px; color: white; font-size: 1.2rem; margin-bottom: 20px;"
-               [style.opacity]="profileData()?.is_subscribed ? '1' : '0.5'">
-        
-        <button (click)="saveScore()" 
-                [disabled]="!profileData()?.is_subscribed"
-                [style.background]="profileData()?.is_subscribed ? '#00ffcc' : '#333'"
-                [style.color]="profileData()?.is_subscribed ? '#000' : '#888'"
-                [style.cursor]="profileData()?.is_subscribed ? 'pointer' : 'not-allowed'"
-                style="width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 800; font-size: 1rem; transition: 0.2s;">
-          {{ profileData()?.is_subscribed ? 'Submit Score & Get Tickets' : '🔒 Locked' }}
-        </button>
+      <input type="number" [(ngModel)]="currentScore" 
+             [disabled]="!profileData()?.is_subscribed"
+             placeholder="00"
+             style="width: 100%; box-sizing: border-box; padding: 18px; background: #0a0a0a; border: 2px solid #222; border-radius: 16px; color: #00ffcc; font-size: 2rem; font-weight: 900; text-align: center; margin-bottom: 20px; outline: none;">
+      
+      <button (click)="saveScore()" 
+              [disabled]="!profileData()?.is_subscribed"
+              style="width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s;"
+              [style.background]="profileData()?.is_subscribed ? '#00ffcc' : '#222'"
+              [style.color]="profileData()?.is_subscribed ? '#000' : '#444'">
+        {{ profileData()?.is_subscribed ? 'Get Tickets' : '🔒 Locked' }}
+      </button>
+      <div *ngIf="statusMessage()" style="margin-top: 15px; text-align: center; color: #00ffcc; font-size: 0.85rem; font-weight: 600;">{{ statusMessage() }}</div>
+    </div>
 
-        <div *ngIf="statusMessage()" style="margin-top: 15px; text-align: center; color: #00ffcc; font-size: 0.9rem;">
-          {{ statusMessage() }}
+    <div style="background: #111; padding: 35px; border-radius: 24px; border: 1px solid #222; box-sizing: border-box;">
+      <h3 style="margin: 0 0 20px 0; font-size: 1.3rem;">Recent Rounds</h3>
+      <div *ngFor="let s of recentScores()" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #1a1a1a;">
+        <span style="color: #666; font-size: 0.9rem;">{{ s.created_at | date:'MMM d, y' }}</span>
+        <div style="background: rgba(0,255,204,0.1); color: #00ffcc; padding: 5px 12px; border-radius: 8px; font-weight: 800; font-size: 0.85rem;">
+          +{{ s.score_value }}
         </div>
       </div>
-    </div>
-
-    <div style="background: #141414; padding: 30px; border-radius: 20px; border: 1px solid #333;">
-      <h3 style="margin-top: 0;">Recent Activity</h3>
-      <div *ngFor="let s of recentScores()" style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222;">
-        <span style="color: #888;">{{ s.created_at | date:'shortDate' }}</span>
-        <strong style="color: #00ffcc;">+{{ s.score_value }} Tickets</strong>
-      </div>
-      <div *ngIf="recentScores().length === 0" style="color: #555; text-align: center; padding: 20px;">
-        No scores submitted yet.
-      </div>
+      <div *ngIf="recentScores().length === 0" style="color: #444; text-align: center; padding: 20px;">No rounds logged yet.</div>
     </div>
 
   </div>
 
   <div id="charity-selector" style="margin-top: 60px;">
-    <h2 style="margin-bottom: 30px;">Choose Your Cause</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+    <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 30px; letter-spacing: -1px;">Select Your Impact</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
       <div *ngFor="let charity of availableCharities()" 
            (click)="selectCharity(charity)"
-           [style.border-color]="selectedCharity()?.id === charity.id ? '#00ffcc' : '#333'"
-           style="background: #1a1a1a; border: 2px solid #333; padding: 20px; border-radius: 15px; cursor: pointer; transition: 0.3s;">
-        <h4 style="margin: 0; color: #fff;">{{ charity.name }}</h4>
-        <p style="color: #888; font-size: 0.8rem; margin: 10px 0 0 0;">{{ charity.description }}</p>
-        <div *ngIf="selectedCharity()?.id === charity.id" style="margin-top: 10px; color: #00ffcc; font-size: 0.8rem; font-weight: bold;">
-          ✓ Currently Supporting
-        </div>
+           [style.border-color]="selectedCharity()?.id === charity.id ? '#00ffcc' : '#222'"
+           [style.background]="selectedCharity()?.id === charity.id ? 'rgba(0,255,204,0.02)' : '#111'"
+           style="border: 2px solid #222; padding: 25px; border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative;">
+        <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700;">{{ charity.name }}</h4>
+        <p style="color: #666; font-size: 0.85rem; margin-top: 10px; line-height: 1.5;">{{ charity.description }}</p>
+        <div *ngIf="selectedCharity()?.id === charity.id" style="position: absolute; top: 15px; right: 15px; color: #00ffcc; font-size: 1.2rem;">✓</div>
       </div>
     </div>
   </div>

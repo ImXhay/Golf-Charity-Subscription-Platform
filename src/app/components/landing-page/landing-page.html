@@ -1,83 +1,276 @@
-<div style="background-color: #050505; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden;">
-
-  <nav style="display: flex; justify-content: space-between; align-items: center; padding: 30px 5%; max-width: 1200px; margin: 0 auto;">
-    <div style="font-size: 1.5rem; font-weight: 900; letter-spacing: -1px;">
-      Impact<span style="color: #00ffcc;">Draw.</span>
+<div
+  style="
+    background-color: #050505;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  "
+>
+  <nav
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30px 5%;
+      max-width: 1200px;
+      margin: 0 auto;
+    "
+  >
+    <div style="font-size: 1.5rem; font-weight: 900; letter-spacing: -1px">
+      Impact<span style="color: #00ffcc">Draw.</span>
     </div>
-    <div style="display: flex; gap: 20px;">
-      <button (click)="openAuth()" style="background: transparent; color: white; border: none; font-weight: 600; cursor: pointer;">Log In</button>
-      <button (click)="openAuth()" style="background: white; color: black; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s;">
+    <div style="display: flex; gap: 20px">
+      <button
+        (click)="openAuth()"
+        style="
+          background: transparent;
+          color: white;
+          border: none;
+          font-weight: 600;
+          cursor: pointer;
+        "
+      >
+        Log In
+      </button>
+      <button
+        (click)="openAuth()"
+        style="
+          background: white;
+          color: black;
+          border: none;
+          padding: 10px 24px;
+          border-radius: 8px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: 0.3s;
+        "
+      >
         Join the Platform
       </button>
     </div>
   </nav>
 
-  <header style="padding: 100px 5% 80px 5%; max-width: 1000px; margin: 0 auto; text-align: center; position: relative;">
-    
-    <div style="position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(99,91,255,0.15) 0%, rgba(0,0,0,0) 70%); z-index: 0; pointer-events: none;"></div>
+  <header
+    style="
+      padding: 100px 5% 80px 5%;
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+    "
+  >
+    <div
+      style="
+        position: absolute;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(99, 91, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+        z-index: 0;
+        pointer-events: none;
+      "
+    ></div>
 
-    <div style="position: relative; z-index: 1;">
-      <div style="display: inline-block; background: rgba(0, 255, 204, 0.1); color: #00ffcc; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-bottom: 30px; border: 1px solid rgba(0,255,204,0.2);">
+    <div style="position: relative; z-index: 1">
+      <div
+        style="
+          display: inline-block;
+          background: rgba(0, 255, 204, 0.1);
+          color: #00ffcc;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: bold;
+          margin-bottom: 30px;
+          border: 1px solid rgba(0, 255, 204, 0.2);
+        "
+      >
         Transforming scores into social impact.
       </div>
-      
-      <h1 style="font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 900; line-height: 1.1; margin: 0 0 25px 0; letter-spacing: -2px;">
-        Play with Purpose.<br>
-        <span style="background: linear-gradient(90deg, #fff 0%, #666 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Win with Impact.</span>
+
+      <h1
+        style="
+          font-size: clamp(3rem, 8vw, 5.5rem);
+          font-weight: 900;
+          line-height: 1.1;
+          margin: 0 0 25px 0;
+          letter-spacing: -2px;
+        "
+      >
+        Play with Purpose.<br />
+        <span
+          style="
+            background: linear-gradient(90deg, #fff 0%, #666 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+          "
+          >Win with Impact.</span
+        >
       </h1>
-      
-      <p style="font-size: clamp(1.1rem, 3vw, 1.4rem); color: #888; max-width: 600px; margin: 0 auto 40px auto; line-height: 1.6;">
-        A premium subscription platform where your monthly golf scores unlock a high-stakes prize pool, while seamlessly funding charities you care about.
+
+      <p
+        style="
+          font-size: clamp(1.1rem, 3vw, 1.4rem);
+          color: #888;
+          max-width: 600px;
+          margin: 0 auto 40px auto;
+          line-height: 1.6;
+        "
+      >
+        A premium subscription platform where your monthly golf scores unlock a high-stakes prize
+        pool, while seamlessly funding charities you care about.
       </p>
 
-      <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-        <button (click)="openAuth()" style="background: #00ffcc; color: black; border: none; padding: 18px 40px; border-radius: 12px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: transform 0.2s;">
+      <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap">
+        <button
+          (click)="openAuth()"
+          style="
+            background: #00ffcc;
+            color: black;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s;
+          "
+        >
           Subscribe & Play
         </button>
-        <button (click)="scrollToSteps()" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid #333; padding: 18px 40px; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+        <button
+          (click)="scrollToSteps()"
+          style="
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid #333;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+          "
+        >
           How it Works ↓
         </button>
       </div>
     </div>
   </header>
 
-  <section id="how-it-works" style="padding: 80px 5%; background: #0a0a0a; border-top: 1px solid #1a1a1a;">
-    <div style="max-width: 1200px; margin: 0 auto;">
-      <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 60px;">The Engine Behind the Impact</h2>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
-        
-        <div style="background: #111; padding: 40px; border-radius: 20px; border: 1px solid #222; text-align: left;">
-          <div style="color: #635bff; font-size: 2.5rem; font-weight: 900; margin-bottom: 15px;">01.</div>
-          <h3 style="font-size: 1.5rem; margin: 0 0 15px 0;">Subscribe & Direct Funds</h3>
-          <p style="color: #888; line-height: 1.6;">Join the platform with a monthly or yearly plan. You choose exactly which verified charity receives a minimum 10% of your subscription.</p>
+  <section
+    id="how-it-works"
+    style="padding: 80px 5%; background: #0a0a0a; border-top: 1px solid #1a1a1a"
+  >
+    <div style="max-width: 1200px; margin: 0 auto">
+      <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 60px">
+        The Engine Behind the Impact
+      </h2>
+
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 30px;
+        "
+      >
+        <div
+          style="
+            background: #111;
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #222;
+            text-align: left;
+          "
+        >
+          <div style="color: #635bff; font-size: 2.5rem; font-weight: 900; margin-bottom: 15px">
+            01.
+          </div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 15px 0">Subscribe & Direct Funds</h3>
+          <p style="color: #888; line-height: 1.6">
+            Join the platform with a monthly or yearly plan. You choose exactly which verified
+            charity receives a minimum 10% of your subscription.
+          </p>
         </div>
 
-        <div style="background: #111; padding: 40px; border-radius: 20px; border: 1px solid #222; text-align: left;">
-          <div style="color: #00ffcc; font-size: 2.5rem; font-weight: 900; margin-bottom: 15px;">02.</div>
-          <h3 style="font-size: 1.5rem; margin: 0 0 15px 0;">Log Your Scores</h3>
-          <p style="color: #888; line-height: 1.6;">Submit your latest Stableford golf scores. Our algorithm tracks your rolling 5-score history to generate your unique monthly "Lottery Ticket."</p>
+        <div
+          style="
+            background: #111;
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #222;
+            text-align: left;
+          "
+        >
+          <div style="color: #00ffcc; font-size: 2.5rem; font-weight: 900; margin-bottom: 15px">
+            02.
+          </div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 15px 0">Log Your Scores</h3>
+          <p style="color: #888; line-height: 1.6">
+            Submit your latest Stableford golf scores. Our algorithm tracks your rolling 5-score
+            history to generate your unique monthly "Lottery Ticket."
+          </p>
         </div>
 
-        <div style="background: #111; padding: 40px; border-radius: 20px; border: 1px solid #222; text-align: left;">
-          <div style="color: #ffcc00; font-size: 2.5rem; font-weight: 900; margin-bottom: 15px;">03.</div>
-          <h3 style="font-size: 1.5rem; margin: 0 0 15px 0;">The Monthly Draw</h3>
-          <p style="color: #888; line-height: 1.6;">Every month, the 5-Number algorithmic draw executes. Match 3, 4, or 5 numbers to win a slice of the dynamic prize pool.</p>
+        <div
+          style="
+            background: #111;
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #222;
+            text-align: left;
+          "
+        >
+          <div style="color: #ffcc00; font-size: 2.5rem; font-weight: 900; margin-bottom: 15px">
+            03.
+          </div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 15px 0">The Monthly Draw</h3>
+          <p style="color: #888; line-height: 1.6">
+            Every month, the 5-Number algorithmic draw executes. Match 3, 4, or 5 numbers to win a
+            slice of the dynamic prize pool.
+          </p>
         </div>
-
       </div>
     </div>
   </section>
 
-  <section style="padding: 100px 5%; text-align: center; max-width: 800px; margin: 0 auto;">
-    <h2 style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 20px;">Ready to change the game?</h2>
-    <p style="color: #888; font-size: 1.2rem; margin-bottom: 40px;">Join hundreds of players turning their passion into measurable social impact.</p>
-    <button (click)="openAuth()" style="background: white; color: black; border: none; padding: 20px 50px; border-radius: 12px; font-size: 1.2rem; font-weight: 800; cursor: pointer;">
+  <section style="padding: 100px 5%; text-align: center; max-width: 800px; margin: 0 auto">
+    <h2 style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 20px">
+      Ready to change the game?
+    </h2>
+    <p style="color: #888; font-size: 1.2rem; margin-bottom: 40px">
+      Join hundreds of players turning their passion into measurable social impact.
+    </p>
+    <button
+      (click)="openAuth()"
+      style="
+        background: white;
+        color: black;
+        border: none;
+        padding: 20px 50px;
+        border-radius: 12px;
+        font-size: 1.2rem;
+        font-weight: 800;
+        cursor: pointer;
+      "
+    >
       Create Your Account
     </button>
   </section>
 
-  <footer style="padding: 40px 5%; border-top: 1px solid #1a1a1a; text-align: center; color: #555; font-size: 0.9rem;">
+  <footer
+    style="
+      padding: 40px 5%;
+      border-top: 1px solid #1a1a1a;
+      text-align: center;
+      color: #555;
+      font-size: 0.9rem;
+    "
+  >
     &copy; 2026 ImpactDraw Platform. Powered by Digital Heroes.
   </footer>
 </div>

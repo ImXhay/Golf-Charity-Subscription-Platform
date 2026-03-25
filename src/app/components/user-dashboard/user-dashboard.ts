@@ -96,21 +96,8 @@ export class UserDashboard implements OnInit {
 
   async subscribeToPlatform() {
     this.isUpdatingSubscription.set(true);
-    try {
-      const { error } = await this.supabase.client
-        .from('profiles')
-        .update({ is_subscribed: true })
-        .eq('id', this.user.id);
-
-      if (error) throw error;
-
-      window.location.href = 'https://buy.stripe.com/test_7sY6oH8qs7gB3zX5rr5os00';
-    } catch (err) {
-      console.error('Subscription update failed:', err);
-      this.isUpdatingSubscription.set(false);
-    }
+    window.location.href = 'https://buy.stripe.com/test_7sY6oH8qs7gB3zX5rr5os00';
   }
-
   async saveScore() {
     if (!this.profileData()?.is_subscribed) {
       this.statusMessage.set('🔒 Subscription required to submit scores.');

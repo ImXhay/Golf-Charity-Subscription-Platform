@@ -1,76 +1,77 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { Supabase } from './services/supabase';
-import { Login } from './components/login/login'; 
-import { UserDashboard } from "./components/user-dashboard/user-dashboard";
-import { AdminDashboard } from "./components/admin-dashboard/admin-dashboard"; 
+
+// Component Imports
+import { Login } from './components/login/login';
+import { UserDashboard } from './components/user-dashboard/user-dashboard';
+import { AdminDashboard } from './components/admin-dashboard/admin-dashboard';
 import { LandingPage } from './components/landing-page/landing-page';
+import { PaymentSuccess } from './components/payment-success/payment-success';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, Login, UserDashboard, AdminDashboard, LandingPage], 
+  imports: [CommonModule, Login, UserDashboard, AdminDashboard, LandingPage, PaymentSuccess],
   templateUrl: './app.html'
 })
 export class App implements OnInit {
   currentUser = signal<any>(null);
-  userRole = signal<string>('user'); 
-  view = signal<'user' | 'admin'>('user'); 
+  userRole = signal<'user' | 'admin' | null>(null);
+  view = signal<'user' | 'admin'>('user');
+  showLandingPage = signal(true);
+  isSuccessPage = signal(false);
 
-  showLandingPage = signal<boolean>(true); 
+  constructor(
+    private supabase: Supabase, 
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    if (isPlatformBrowser(this.platformId)) {
+      this.isSuccessPage.set(window.location.pathname.includes('payment-success'));
+    }
+  }
 
-  constructor(private supabaseService: Supabase) {}
+  async ngOnInit() {
+    this.supabase.client.auth.onAuthStateChange(async (event, session) => {
+      const user = session?.user || null;
+      this.currentUser.set(user);
+      
+      if (user) {
+        this.showLandingPage.set(false);
+        // We run this without 'await' so it doesn't block the UI if the DB is slow
+        this.checkUserRole(user.id);
+      } else {
+        this.userRole.set(null);
+        if (!this.isSuccessPage()) this.showLandingPage.set(true);
+      }
+    });
+  }
+
+  async checkUserRole(userId: string) {
+    try {
+      // Set a default immediately so the UI isn't empty
+      this.userRole.set('user');
+      this.view.set('user');
+
+      const profile = await this.supabase.getProfile(userId);
+      
+      if (profile && profile.role === 'admin') {
+        this.userRole.set('admin');
+        this.view.set('admin');
+      }
+      // If profile is 'user', the defaults we set above will stay
+    } catch (err) {
+      console.error('Role check failed, defaulting to user view:', err);
+    }
+  }
 
   goToAuth() {
     this.showLandingPage.set(false);
   }
 
-  async ngOnInit() {
-    const { data: { session } } = await this.supabaseService.client.auth.getSession();
-    
-    if (session?.user) {
-      this.currentUser.set(session.user);
-      await this.loadUserRole(session.user.id);
-
-      if (this.userRole() === 'admin') {
-        this.view.set('admin');
-      }
-    }
-
-    this.supabaseService.client.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        this.currentUser.set(null);
-        this.userRole.set('user'); 
-        this.view.set('user'); 
-        this.showLandingPage.set(true); 
-      } 
-      else if (session) {
-        this.currentUser.set(session.user);
-      
-        await this.loadUserRole(session.user.id); 
-      
-        if (event === 'SIGNED_IN') {
-          if (this.userRole() === 'admin') {
-            this.view.set('admin'); 
-          } else {
-            this.view.set('user'); 
-          }
-        }
-      }
-    });
-  }
-
-  async loadUserRole(userId: string) {
-    const profile = await this.supabaseService.getProfile(userId);
-    if (profile && profile.role) {
-      const cleanRole = profile.role.replace(/['"]/g, '').trim();
-      this.userRole.set(cleanRole);
-    } else {
-      this.userRole.set('user'); 
-    }
-  }
-
-  switchView(newView: 'user' | 'admin') {
-    this.view.set(newView);
+  switchView(target: 'user' | 'admin') {
+    this.view.set(target);
   }
 }
