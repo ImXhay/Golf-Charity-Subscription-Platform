@@ -1,0 +1,42 @@
+<div class="admin-container">
+  <header class="admin-header">
+    <h1>Platform Administration</h1>
+    <div class="admin-actions">
+      <button class="draw-btn" (click)="runMonthlyDraw()">🚀 Run Monthly Draw</button>
+      <button class="refresh-btn" (click)="loadAllUsers()">🔄 Refresh</button>
+    </div>
+  </header>
+
+  <div class="admin-card">
+    <div class="table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User Email</th>
+            <th>Status</th>
+            <th>Charity Choice</th>
+            <th>Joined Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users()">
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="status-pill" [class.active]="user.is_subscribed">
+                {{ user.is_subscribed ? 'Active' : 'Pending' }}
+              </span>
+            </td>
+            <td>{{ user.charities?.name || 'Not Selected' }}</td>
+            <td>{{ user.created_at | date:'shortDate' }}</td>
+            <td>
+              <button class="action-link">Edit Scores</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div *ngIf="loading()" class="loader">Loading platform data...</div>
+    </div>
+  </div>
+</div>

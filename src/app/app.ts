@@ -1,22 +1,38 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Auth } from './components/auth/auth';
-import { UserDashboard } from './components/user-dashboard/user-dashboard';
+import { Supabase } from './services/supabase';
+import { UserDashboard } from "./components/user-dashboard/user-dashboard";
+import { Login } from './components/login/login';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, Auth, UserDashboard],
-  template: `
-    <app-auth *ngIf="!currentUser" (userLoggedIn)="onLogin($event)"></app-auth>
-
-    <app-user-dashboard *ngIf="currentUser" [user]="currentUser"></app-user-dashboard>
-  `
+  standalone: true, 
+  imports: [CommonModule, Login, UserDashboard], 
+  templateUrl: './app.html'
 })
-export class App {
-  currentUser: any = null;
+export class App implements OnInit {
+  currentUser = signal<any>(null);
 
-  onLogin(user: any) {
-    this.currentUser = user;
+  constructor(private supabaseService: Supabase) {}
+
+  async ngOnInit() {
+    const { data: { session } } = await this.supabaseService.client.auth.getSession();
+    
+    if (session) {
+      this.currentUser.set(session.user);
+    }
+
+    // 2. Listen for auth changes (like logging out)
+    this.supabaseService.client.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        this.currentUser.set(null);
+      } else if (session) {
+        this.currentUser.set(session.user);
+      }
+    });
+  }
+
+  handleLogin(user: any) {
+    this.currentUser.set(user);
   }
 }

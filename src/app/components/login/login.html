@@ -1,0 +1,13 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Impact<span style="color: #00ffcc">Drive</span></h1>
+    <p>Sign in to manage your scores and impact.</p>
+
+    <div *ngIf="error()" class="error-box">{{ error() }}</div>
+
+    <input type="email" [(ngModel)]="email" placeholder="Email Address" class="auth-input">
+    <input type="password" [(ngModel)]="password" placeholder="Password" class="auth-input">
+    
+    <button (click)='handleSignIn()' class="login-btn">Sign In</button>
+  </div>
+</div>
