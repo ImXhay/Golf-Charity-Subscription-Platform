@@ -8,34 +8,32 @@ import { Supabase } from '../../services/supabase';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-dashboard.html',
-  styleUrl: './admin-dashboard.css',
+  styleUrl: './admin-dashboard.css'
 })
 export class AdminDashboard implements OnInit {
-
   users = signal<any[]>([]);
   charities = signal<any[]>([]);
   claims = signal<any[]>([]);
   draws = signal<any[]>([]);
-
+  
   isProcessing = signal(false);
   statusMsg = signal('');
-
-  newName = '';
-  newDesc = '';
-
+  newName = ''; newDesc = '';
+  
   showWinnerModal = false;
   totalWinners = 0;
   totalPool = 0;
+  rolloverAmount = 0;
   lastWinningNumbers: number[] = [];
   winnerDetails: any = null;
 
   constructor(private supabase: Supabase) {}
 
   async ngOnInit() {
-    await this.loadInitialData();
+    await this.loadData();
   }
 
-  async loadInitialData() {
+  async loadData() {
     this.users.set(await this.supabase.getAllProfiles());
     this.charities.set(await this.supabase.getCharities());
     this.claims.set(await this.supabase.getPendingClaims());
@@ -43,61 +41,47 @@ export class AdminDashboard implements OnInit {
   }
 
   async runMonthlyDraw() {
-    const confirmed = confirm('Execute the monthly draw?');
-    if (!confirmed) return;
-
+    if (!confirm('Execute the monthly draw?')) return;
     this.isProcessing.set(true);
+    
     try {
-      const result = await this.supabase.runMonthlyDraw();
-      if (result.success) {
-        this.winnerDetails = result.details;
-        this.totalWinners = result.totalWinners;
-        this.totalPool = result.totalPool;
-        this.lastWinningNumbers = result.winningNumbers;
+      const res = await this.supabase.runMonthlyDraw();
+      if (res.success) {
+        this.winnerDetails = res.details;
+        this.totalWinners = res.totalWinners;
+        this.totalPool = res.totalPool;
+        this.rolloverAmount = res.rolloverAmount;
+        this.lastWinningNumbers = res.winningNumbers;
         this.showWinnerModal = true;
+        await this.loadData();
       } else {
-        alert('Draw Engine Error: ' + (result?.error || 'Unknown failure'));
+        alert('Error: ' + res.error);
       }
     } finally {
       this.isProcessing.set(false);
     }
   }
 
-  async updateClaim(claimId: string, status: 'Paid' | 'Rejected') {
-    const success = await this.supabase.updateClaimStatus(claimId, status);
-    if (success) {
-      await this.loadClaims();
+  async updateClaim(id: string, status: string) {
+    if (await this.supabase.updateClaimStatus(id, status)) {
+      await this.loadData();
     }
-  }
-
-  async loadClaims() {
-    this.claims.set(await this.supabase.getPendingClaims());
   }
 
   async addNewCharity() {
-    if (!this.newName || !this.newDesc) return;
-    this.isProcessing.set(true);
-    const success = await this.supabase.addCharity(this.newName, this.newDesc);
-    if (success) {
-      this.newName = '';
-      this.newDesc = '';
-      this.charities.set(await this.supabase.getCharities());
+    if (await this.supabase.addCharity(this.newName, this.newDesc)) {
+      this.newName = ''; this.newDesc = '';
+      await this.loadData();
     }
-    this.isProcessing.set(false);
   }
 
   async removeCharity(id: string, name: string) {
     if (confirm(`Delete ${name}?`)) {
       await this.supabase.deleteCharity(id);
-      this.charities.set(await this.supabase.getCharities());
+      await this.loadData();
     }
   }
 
-  closeWinnerModal() {
-    this.showWinnerModal = false;
-  }
-
-  async logout() {
-    await this.supabase.logout();
-  }
+  closeWinnerModal() { this.showWinnerModal = false; }
+  async logout() { await this.supabase.logout(); }
 }
