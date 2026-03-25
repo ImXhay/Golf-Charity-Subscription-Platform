@@ -1,1 +1,28 @@
-<app-user-dashboard></app-user-dashboard>
+<app-landing-page 
+  *ngIf="!currentUser() && showLandingPage()" 
+  (navigateToAuth)="goToAuth()">
+</app-landing-page>
+
+<app-login 
+  *ngIf="!currentUser() && !showLandingPage()">
+</app-login>
+
+<div *ngIf="currentUser()">
+
+  <div *ngIf="userRole() === 'admin'" style="background: #0a0a0a; padding: 12px; text-align: center; border-bottom: 1px solid #333; display: flex; justify-content: center; gap: 20px;">
+    <button (click)="switchView('user')" 
+            [style.color]="view() === 'user' ? '#00ffcc' : '#888'" 
+            style="background: transparent; border: none; cursor: pointer; font-weight: bold; font-size: 1rem;">
+      ⛳ User View
+    </button>
+    <button (click)="switchView('admin')" 
+            [style.color]="view() === 'admin' ? '#00ffcc' : '#888'" 
+            style="background: transparent; border: none; cursor: pointer; font-weight: bold; font-size: 1rem;">
+      ⚙️ Admin Panel
+    </button>
+  </div>
+
+  <app-user-dashboard *ngIf="view() === 'user'" [user]="currentUser()"></app-user-dashboard>
+  <app-admin-dashboard *ngIf="view() === 'admin' && userRole() === 'admin'"></app-admin-dashboard>
+
+</div>

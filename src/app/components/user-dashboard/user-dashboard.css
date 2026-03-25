@@ -1,72 +1,184 @@
-/* GLOBAL LAYOUT - PRD Section 12 */
 .dashboard-layout {
   min-height: 100vh;
   background-color: #0a0a0a;
-  color: #ffffff;
+  color: #fff;
   font-family: 'Inter', sans-serif;
+  padding: 0 40px 40px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
+
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 40px;
-  background: #121212;
-  border-bottom: 1px solid #222;
+  padding: 20px 0;
+  border-bottom: 1px solid #333;
+  margin-bottom: 40px;
 }
 
-.brand { font-size: 1.4rem; font-weight: 800; }
-.brand-accent { color: #00ffcc; }
-
-.main-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px;
+.brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
 }
 
-/* TOP STATS ROW - PRD Section 10 */
+.brand-accent {
+  color: #00ffcc;
+}
+
+.nav-links {
+  display: flex;
+  gap: 25px;
+  align-items: center;
+}
+
+.nav-links a {
+  color: #aaa;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover, 
+.nav-links a.active {
+  color: #00ffcc;
+}
+
+.logout-btn {
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #444;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+}
+
+
+.page-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.page-header p {
+  color: #888;
+  font-size: 1.1rem;
+  margin-bottom: 40px;
+}
+
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .stat-card {
   background: #141414;
-  border: 1px solid #222;
+  border: 1px solid #333;
+  padding: 25px;
   border-radius: 12px;
-  padding: 20px;
 }
 
-.stat-value { font-size: 1.6rem; font-weight: bold; margin: 5px 0; }
-.stat-subtext { color: #00ffcc; font-size: 0.8rem; }
+.stat-card h3 {
+  color: #aaa;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
 
-/* TWO-COLUMN GRID - Fixes the "Ruined" Layout */
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr; /* Gives scoring more room */
+  grid-template-columns: 1fr 1fr;
   gap: 30px;
 }
 
 .card {
   background: #141414;
-  border: 1px solid #222;
+  border: 1px solid #333;
+  padding: 30px;
   border-radius: 12px;
-  padding: 25px;
 }
 
-/* INPUTS & BUTTONS */
-.input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-.score-input { 
-  flex: 1; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; 
-}
-.save-btn { 
-  background: #00ffcc; color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer;
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
 }
 
-/* SCORE LIST */
-.score-list { list-style: none; padding: 0; }
-.score-item { 
-  display: flex; justify-content: space-between; padding: 12px; background: #1a1a1a; margin-bottom: 8px; border-radius: 6px; 
+.input-group {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.score-input {
+  flex: 1;
+  padding: 15px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: white;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.score-input:focus {
+  outline: none;
+  border-color: #00ffcc;
+}
+
+.save-btn {
+  background: #00ffcc;
+  color: #000;
+  border: none;
+  padding: 0 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.save-btn:hover {
+  transform: scale(1.02);
+}
+
+.score-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid #222;
+}
+
+.score-date {
+  color: #aaa;
+}
+
+.score-value {
+  font-weight: bold;
+  color: #00ffcc;
 }

@@ -1,13 +1,32 @@
 <div class="login-container">
   <div class="login-card">
     <h1>Impact<span style="color: #00ffcc">Drive</span></h1>
-    <p>Sign in to manage your scores and impact.</p>
+    <p>{{ isSignUp() ? 'Create your golfer profile' : 'Sign in to manage your scores' }}</p>
 
-    <div *ngIf="error()" class="error-box">{{ error() }}</div>
+    <div *ngIf="error()" class="error-box">
+      {{ error() }}
+    </div>
 
     <input type="email" [(ngModel)]="email" placeholder="Email Address" class="auth-input">
     <input type="password" [(ngModel)]="password" placeholder="Password" class="auth-input">
     
-    <button (click)='handleSignIn()' class="login-btn">Sign In</button>
+    <div *ngIf="isSignUp()" style="margin-bottom: 20px; text-align: left;">
+      <label style="color: #888; font-size: 0.8rem; margin-left: 5px;">Select your Charity</label>
+      <select [(ngModel)]="selectedCharityId" class="auth-input" style="margin-top: 5px;">
+        <option value="" disabled selected>Choose a cause...</option>
+        <option *ngFor="let c of charities()" [value]="c.id">{{ c.icon }} {{ c.name }}</option>
+      </select>
+    </div>
+
+    <button (click)='handleAuth()' [disabled]="isLoading()" class="login-btn">
+      {{ isLoading() ? 'Processing...' : (isSignUp() ? 'Create Account' : 'Sign In') }}
+    </button>
+
+    <p style="margin-top: 25px; font-size: 0.9rem; color: #aaa;">
+      {{ isSignUp() ? 'Already have an account?' : 'New to ImpactDrive?' }}
+      <span (click)="toggleMode()" style="color: #00ffcc; cursor: pointer; font-weight: bold;">
+        {{ isSignUp() ? 'Sign In' : 'Join Now' }}
+      </span>
+    </p>
   </div>
 </div>
