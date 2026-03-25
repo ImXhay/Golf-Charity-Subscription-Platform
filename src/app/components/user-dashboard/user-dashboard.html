@@ -1,0 +1,65 @@
+<div class="dashboard-layout">
+  
+  <nav class="navbar">
+    <div class="brand">
+      <span class="brand-accent">Impact</span>Drive
+    </div>
+    <div class="nav-links">
+      <a href="#" class="active">Dashboard</a>
+      <a href="#">My Charity</a>
+      <a href="#">Monthly Draw</a>
+    </div>
+    <button class="logout-btn" (click)="logout()">Sign Out</button>
+  </nav>
+
+  <main class="main-content">
+    <header class="page-header">
+      <h1>Welcome back.</h1>
+      <p>Every swing makes a difference today.</p>
+    </header>
+
+    <div class="dashboard-grid">
+      
+      <div class="card scoring-card">
+        <h2>Log a Round</h2>
+        
+        <div class="input-group">
+          <input type="number" [(ngModel)]="currentScore" placeholder="Enter Stableford Score (1-45)" class="score-input">
+          <button (click)="saveScore()" class="save-btn">Save Score</button>
+        </div>
+
+        <p *ngIf="statusMessage()" style="font-weight: bold; color: #00ffcc; margin-bottom: 20px;">
+          {{ statusMessage() }}
+        </p>
+
+        <h2 style="margin-top: 40px;">Recent Rounds</h2>
+        
+        <div *ngIf="recentScores().length === 0" style="color: #888; font-style: italic;">
+          No scores logged yet. Play a round!
+        </div>
+
+        <ul class="score-list">
+          <li *ngFor="let score of recentScores()" class="score-item">
+            <span class="score-date">{{ score.created_at | date:'mediumDate' }}</span>
+            <span class="score-value">{{ score.score_value }} pts</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card impact-card">
+        <h2>Your Charity Impact</h2>
+        <div style="text-align: center; padding: 40px 20px;">
+          <div style="font-size: 3rem; margin-bottom: 10px;">🤝</div>
+          <h3 style="color: #fff; margin-bottom: 10px;">No Charity Selected</h3>
+          <p style="color: #888; line-height: 1.5; margin-bottom: 20px;">
+            You haven't chosen a charity to support with your subscription yet. 
+          </p>
+          <button style="padding: 10px 20px; background: transparent; color: #fff; border: 1px solid #fff; border-radius: 6px; cursor: pointer;">
+            Choose a Charity
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
