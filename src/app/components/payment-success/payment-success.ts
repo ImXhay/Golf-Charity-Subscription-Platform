@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Supabase } from '../../services/supabase';
 
@@ -19,25 +19,44 @@ import { Supabase } from '../../services/supabase';
   `
 })
 export class PaymentSuccess implements OnInit {
-  constructor(private supabase: Supabase, private router: Router) {}
+  constructor(
+    private supabase: Supabase, 
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
-  async ngOnInit() {
-  const { data: { user } } = await this.supabase.client.auth.getUser();
-
-  if (user) {
-    const { error } = await this.supabase.client
-      .from('profiles')
-      .update({ is_subscribed: true })
-      .eq('id', user.id);
-
-    if (!error) {
-      console.log('Subscription activated!');
-
-      setTimeout(() => {
-   
-        window.location.href = '/dashboard'; 
-      }, 2000);
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.processPayment();
     }
   }
-}
+
+  async processPayment() {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const { data: { user }, error: authError } = await this.supabase.client.auth.getUser();
+
+      if (user) {
+        const { error: dbError } = await this.supabase.client
+          .from('profiles')
+          .update({ is_subscribed: true })
+          .eq('id', user.id);
+
+        if (dbError) {
+          console.error('Supabase RLS or Update Error:', dbError.message);
+          alert('Payment recorded, but profile update failed. Check database permissions.');
+        } else {
+          console.log('Subscription activated successfully!');
+        }
+      } else {
+        console.error('No active session found. User might need to log in again.');
+      }
+
+    } catch (err) {
+      console.error('Critical failure in payment success logic:', err);
+    } finally {
+      window.location.href = '/dashboard';
+    }
+  }
 }

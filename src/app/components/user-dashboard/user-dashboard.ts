@@ -8,7 +8,7 @@ import { Supabase } from '../../services/supabase';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './user-dashboard.html',
-  styleUrl: './user-dashboard.css'
+  styleUrl: './user-dashboard.css',
 })
 export class UserDashboard implements OnInit {
   @Input() user: any;
@@ -17,17 +17,23 @@ export class UserDashboard implements OnInit {
   recentScores = signal<any[]>([]);
   availableCharities = signal<any[]>([]);
   selectedCharity = signal<any>(null);
-  
+
   currentScore: number | null = null;
   statusMessage = signal('');
   isUpdatingSubscription = signal(false);
 
-  // Template Signals
   drawStats = signal({ nextDraw: 'April 30, 2026', drawsEntered: 0 });
   winnings = signal({ totalWon: 0, paymentStatus: 'None' });
   subStatus = signal({ plan: 'Monthly', active: false, renewalDate: 'Calculating...' });
-  
+
   totalEntries = computed(() => this.recentScores().length);
+
+  subscriptionPlan = signal<'Monthly' | 'Yearly'>('Monthly');
+  charityPercentage = signal<number>(10);
+
+  selectedFile: File | null = null;
+  uploadStatus = signal('');
+  isUploading = signal(false);
 
   constructor(private supabase: Supabase) {}
 
@@ -41,10 +47,12 @@ export class UserDashboard implements OnInit {
     const profile = await this.supabase.getProfile(this.user.id);
     if (profile) {
       this.profileData.set(profile);
-      this.subStatus.set({ 
-        plan: 'Monthly', 
-        active: profile.is_subscribed, 
-        renewalDate: new Date(new Date(profile.created_at).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString() 
+      this.subStatus.set({
+        plan: 'Monthly',
+        active: profile.is_subscribed,
+        renewalDate: new Date(
+          new Date(profile.created_at).getTime() + 30 * 24 * 60 * 60 * 1000,
+        ).toLocaleDateString(),
       });
       this.recentScores.set(await this.supabase.getRecentScores(this.user.id));
       this.availableCharities.set(await this.supabase.getCharities());
@@ -54,7 +62,7 @@ export class UserDashboard implements OnInit {
   async saveScore() {
     if (!this.currentScore) return;
     const ok = await this.supabase.submitGolfScore(this.user.id, this.currentScore);
-    this.statusMessage.set(ok ? '✅ Score Logged!' : '❌ Error (1-45 only)');
+    this.statusMessage.set(ok ? '✅ Score Added!' : '❌ Please enter a number from 1-45');
     if (ok) {
       this.currentScore = null;
       await this.refreshData();
@@ -62,15 +70,70 @@ export class UserDashboard implements OnInit {
   }
 
   async selectCharity(charity: any) {
-    const ok = await this.supabase.saveCharitySelection(this.user.id, charity.id);
-    if (ok) this.selectedCharity.set(charity);
+    const ok = await this.supabase.saveCharitySelection(
+      this.user.id,
+      charity.id,
+      this.charityPercentage(),
+    );
+    if (ok) {
+      this.selectedCharity.set(charity);
+      this.statusMessage.set(
+        `✅ Charity updated to ${charity.name} at ${this.charityPercentage()}%`,
+      );
+
+      setTimeout(() => this.statusMessage.set(''), 3000);
+    }
+  }
+
+  donateDirectly(charityName: string | undefined) {
+    if (!charityName) {
+      alert('Please select a charity from the grid to support first!');
+      return;
+    }
+
+    console.log(`Routing to Stripe for $20 donation to: ${charityName}`);
+    window.location.href = 'https://buy.stripe.com/test_6oU00j0Y09oJdax8DD5os02';
   }
 
   async subscribeToPlatform() {
     this.isUpdatingSubscription.set(true);
-    window.location.href = 'https://buy.stripe.com/test_7sY6oH8qs7gB3zX5rr5os00';
+
+    if (this.subscriptionPlan() === 'Yearly') {
+      window.location.href = 'https://buy.stripe.com/test_28EbJ18qsdEZ6M9f215os01';
+    } else {
+      window.location.href = 'https://buy.stripe.com/test_7sY6oH8qs7gB3zX5rr5os00';
+    }
   }
 
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+    }
+  }
+
+  async submitProof() {
+    if (!this.selectedFile || !this.user?.id) return;
+
+    this.isUploading.set(true);
+    this.uploadStatus.set('Uploading screenshot...');
+
+    const uploadRes = await this.supabase.uploadProof(this.selectedFile, this.user.id);
+
+    if (uploadRes.success && uploadRes.url) {
+      const claimOk = await this.supabase.submitClaim(this.user.id, uploadRes.url);
+      this.uploadStatus.set(
+        claimOk
+          ? '✅ Proof submitted successfully! Please wait while we review.'
+          : '❌ Failed to register claim.',
+      );
+      if (claimOk) this.selectedFile = null; // Reset on success
+    } else {
+      this.uploadStatus.set('❌ Upload failed: ' + uploadRes.error);
+    }
+
+    this.isUploading.set(false);
+  }
   async logout() {
     await this.supabase.logout();
   }

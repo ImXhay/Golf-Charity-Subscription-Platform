@@ -1,89 +1,360 @@
-<div style="padding: 40px; max-width: 1100px; margin: 0 auto; color: white; font-family: 'Inter', sans-serif;">
-  
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px">
+<div
+  style="
+    padding: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+    color: white;
+    font-family: 'Inter', sans-serif;
+  "
+>
+  <div
+    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px"
+  >
     <h1>Admin <span style="color: #00ffcc">Command Center</span></h1>
-    <button (click)="logout()" style="background: transparent; color: #aaa; border: 1px solid #333; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#222'" onmouseout="this.style.background='transparent'">
+    <button
+      (click)="logout()"
+      style="
+        background: transparent;
+        color: #aaa;
+        border: 1px solid #333;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s;
+      "
+      onmouseover="this.style.background = '#222'"
+      onmouseout="this.style.background = 'transparent'"
+    >
       ← Sign Out
     </button>
   </div>
 
-  <div style="background: #1a1a1a; padding: 30px; border-radius: 12px; border: 1px solid #333; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #635bff;">
+  <div
+    style="
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      margin-bottom: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid #635bff;
+    "
+  >
     <div>
       <h2 style="margin: 0 0 10px 0">Monthly Prize Draw</h2>
-      <p style="color: #888; margin: 0">Execute the algorithm to select winning numbers and notify users.</p>
+      <p style="color: #888; margin: 0">
+        Execute the algorithm to select winning numbers and notify users.
+      </p>
     </div>
-    <button (click)="runMonthlyDraw()" [disabled]="isProcessing()" style="background: #635bff; color: white; font-weight: bold; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;">
-      {{ isProcessing() ? 'Processing...' : '▶ Run Monthly Draw' }}
-    </button>
+    <div style="display: flex; gap: 15px">
+      <button
+        (click)="runDraw(true)"
+        [disabled]="isProcessing()"
+        style="
+          background: transparent;
+          color: #00ffcc;
+          border: 1px solid #00ffcc;
+          padding: 15px 30px;
+          border-radius: 8px;
+          cursor: pointer;
+        "
+      >
+        {{ isProcessing() ? 'Processing...' : '🧪 Run Simulation' }}
+      </button>
+      <button
+        (click)="runDraw(false)"
+        [disabled]="isProcessing()"
+        style="
+          background: #635bff;
+          color: white;
+          font-weight: bold;
+          border: none;
+          padding: 15px 30px;
+          border-radius: 8px;
+          cursor: pointer;
+        "
+      >
+        {{ isProcessing() ? 'Processing...' : '▶ Publish Official Draw' }}
+      </button>
+    </div>
   </div>
-
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; margin-bottom: 50px;">
-    
+  <div
+    style="
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 40px;
+      margin-bottom: 50px;
+    "
+  >
     <div style="background: #141414; padding: 25px; border-radius: 12px; border: 1px solid #333">
       <h2 style="margin-top: 0; margin-bottom: 20px">Add New Charity</h2>
-      
-      <div *ngIf="statusMsg()" style="margin-bottom: 15px; color: #00ffcc; font-weight: bold; padding: 10px; background: rgba(0, 255, 204, 0.1); border-radius: 6px;">
+
+      <div
+        *ngIf="statusMsg()"
+        style="
+          margin-bottom: 15px;
+          color: #00ffcc;
+          font-weight: bold;
+          padding: 10px;
+          background: rgba(0, 255, 204, 0.1);
+          border-radius: 6px;
+        "
+      >
         {{ statusMsg() }}
       </div>
 
-      <input type="text" [(ngModel)]="newName" placeholder="Charity Title (e.g. Red Cross)" style="width: 100%; box-sizing: border-box; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 6px; margin-bottom: 15px;" />
-      
-      <textarea [(ngModel)]="newDesc" placeholder="Describe the charity's mission..." rows="3" style="width: 100%; box-sizing: border-box; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 6px; margin-bottom: 15px; resize: none;"></textarea>
+      <input
+        type="text"
+        [(ngModel)]="newName"
+        placeholder="Charity Title (e.g. Red Cross)"
+        style="
+          width: 100%;
+          box-sizing: border-box;
+          padding: 12px;
+          background: #1a1a1a;
+          border: 1px solid #333;
+          color: white;
+          border-radius: 6px;
+          margin-bottom: 15px;
+        "
+      />
 
-      <button (click)="addNewCharity()" [disabled]="isProcessing()" style="background: #00ffcc; color: black; font-weight: bold; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; width: 100%;">
+      <textarea
+        [(ngModel)]="newDesc"
+        placeholder="Describe the charity's mission..."
+        rows="3"
+        style="
+          width: 100%;
+          box-sizing: border-box;
+          padding: 12px;
+          background: #1a1a1a;
+          border: 1px solid #333;
+          color: white;
+          border-radius: 6px;
+          margin-bottom: 15px;
+          resize: none;
+        "
+      ></textarea>
+
+      <button
+        (click)="addNewCharity()"
+        [disabled]="isProcessing()"
+        style="
+          background: #00ffcc;
+          color: black;
+          font-weight: bold;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 6px;
+          cursor: pointer;
+          width: 100%;
+        "
+      >
         {{ isProcessing() ? 'Adding...' : '+ Save to Database' }}
       </button>
     </div>
 
     <div>
       <h2 style="margin-top: 0; margin-bottom: 20px">Active Charities</h2>
-      <div style="display: flex; flex-direction: column; gap: 15px; max-height: 400px; overflow-y: auto;">
-        <div *ngIf="charities().length === 0" style="color: #888; font-style: italic">No charities loaded.</div>
-        <div *ngFor="let charity of charities()" style="background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+          max-height: 400px;
+          overflow-y: auto;
+        "
+      >
+        <div *ngIf="charities().length === 0" style="color: #888; font-style: italic">
+          No charities loaded.
+        </div>
+        <div
+          *ngFor="let charity of charities()"
+          style="
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
           <div>
-            <strong style="display: block; font-size: 1.05rem; margin-bottom: 2px">{{ charity.name }}</strong>
-            <span style="color: #888; font-size: 0.8rem; display: block; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ charity.description }}</span>
+            <strong style="display: block; font-size: 1.05rem; margin-bottom: 2px">{{
+              charity.name
+            }}</strong>
+            <span
+              style="
+                color: #888;
+                font-size: 0.8rem;
+                display: block;
+                max-width: 200px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              "
+              >{{ charity.description }}</span
+            >
           </div>
-          <button (click)="removeCharity(charity.id, charity.name)" style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+          <button
+            (click)="removeCharity(charity.id, charity.name)"
+            style="
+              background: rgba(255, 77, 77, 0.1);
+              color: #ff4d4d;
+              border: 1px solid rgba(255, 77, 77, 0.3);
+              padding: 6px 12px;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.85rem;
+            "
+          >
             Delete
           </button>
         </div>
       </div>
     </div>
   </div>
+  <h2 style="margin-top: 40px">Reports & Analytics: Charity Payouts</h2>
+  <div
+    style="
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 50px;
+    "
+  >
+    <div
+      *ngIf="charityTotals.length === 0"
+      style="color: #888; text-align: center; font-style: italic"
+    >
+      No active contributions to calculate this month.
+    </div>
 
-  <h2 style="margin-top: 40px;">Pending Verifications</h2>
-  <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 12px; overflow: hidden; margin-bottom: 50px;">
-    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-      <tr style="background: #222; border-bottom: 1px solid #333;">
-        <th style="padding: 15px; color: #aaa;">User Email</th>
-        <th style="padding: 15px; color: #aaa;">Proof Image</th>
-        <th style="padding: 15px; color: #aaa;">Status</th>
-        <th style="padding: 15px; color: #aaa;">Action</th>
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px"
+    >
+      <div
+        *ngFor="let total of charityTotals"
+        style="
+          background: #111;
+          border: 1px solid #222;
+          border-left: 4px solid #ffcc00;
+          padding: 20px;
+          border-radius: 8px;
+        "
+      >
+        <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: #fff">{{ total.name }}</h3>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end">
+          <div>
+            <p style="color: #888; margin: 0; font-size: 0.85rem">Active Donors</p>
+            <p style="margin: 5px 0 0 0; font-weight: bold; font-size: 1.2rem">
+              {{ total.donors }}
+            </p>
+          </div>
+          <div style="text-align: right">
+            <p style="color: #888; margin: 0; font-size: 0.85rem">Total Owed</p>
+            <p style="color: #00ffcc; margin: 5px 0 0 0; font-weight: 900; font-size: 1.5rem">
+              ${{ total.amount.toFixed(2) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <h2 style="margin-top: 40px">Pending Verifications</h2>
+  <div
+    style="
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 50px;
+    "
+  >
+    <table style="width: 100%; border-collapse: collapse; text-align: left">
+      <tr style="background: #222; border-bottom: 1px solid #333">
+        <th style="padding: 15px; color: #aaa">User Email</th>
+        <th style="padding: 15px; color: #aaa">Proof Image</th>
+        <th style="padding: 15px; color: #aaa">Status</th>
+        <th style="padding: 15px; color: #aaa">Action</th>
       </tr>
       <tr *ngIf="claims().length === 0">
-        <td colspan="4" style="padding: 20px; text-align: center; color: #555;">No pending verifications.</td>
-      </tr>
-      <tr *ngFor="let claim of claims()" style="border-bottom: 1px solid #222;">
-        <td style="padding: 15px;">{{ claim.profiles?.email }}</td>
-        <td style="padding: 15px;">
-          <a [href]="claim.proof_url" target="_blank" style="color: #00ffcc; text-decoration: underline;">View Screenshot</a>
+        <td colspan="4" style="padding: 20px; text-align: center; color: #555">
+          No pending verifications.
         </td>
-        <td style="padding: 15px;">
-          <span [style.color]="claim.status === 'Paid' ? '#00ffcc' : (claim.status === 'Rejected' ? '#ff4d4d' : '#ffcc00')">
+      </tr>
+      <tr *ngFor="let claim of claims()" style="border-bottom: 1px solid #222">
+        <td style="padding: 15px">{{ claim.profiles?.email }}</td>
+        <td style="padding: 15px">
+          <a
+            [href]="claim.proof_url"
+            target="_blank"
+            style="color: #00ffcc; text-decoration: underline"
+            >View Screenshot</a
+          >
+        </td>
+        <td style="padding: 15px">
+          <span
+            [style.color]="
+              claim.status === 'Paid'
+                ? '#00ffcc'
+                : claim.status === 'Rejected'
+                  ? '#ff4d4d'
+                  : '#ffcc00'
+            "
+          >
             {{ claim.status }}
           </span>
         </td>
-        <td style="padding: 15px; display: flex; gap: 10px;">
-          <button *ngIf="claim.status === 'Pending'" (click)="updateClaim(claim.id, 'Paid')" style="background: #00ffcc; color: #000; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Approve</button>
-          <button *ngIf="claim.status === 'Pending'" (click)="updateClaim(claim.id, 'Rejected')" style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Reject</button>
+        <td style="padding: 15px; display: flex; gap: 10px">
+          <button
+            *ngIf="claim.status === 'Pending'"
+            (click)="updateClaim(claim.id, 'Paid')"
+            style="
+              background: #00ffcc;
+              color: #000;
+              border: none;
+              padding: 6px 12px;
+              border-radius: 4px;
+              cursor: pointer;
+              font-weight: bold;
+            "
+          >
+            Approve
+          </button>
+          <button
+            *ngIf="claim.status === 'Pending'"
+            (click)="updateClaim(claim.id, 'Rejected')"
+            style="
+              background: rgba(255, 77, 77, 0.1);
+              color: #ff4d4d;
+              border: 1px solid #ff4d4d;
+              padding: 6px 12px;
+              border-radius: 4px;
+              cursor: pointer;
+            "
+          >
+            Reject
+          </button>
         </td>
       </tr>
     </table>
   </div>
 
   <h2 style="margin-top: 40px">Registered Golfers ({{ users().length }})</h2>
-  <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 12px; overflow: hidden; margin-bottom: 50px;">
+  <div
+    style="
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 50px;
+    "
+  >
     <table style="width: 100%; border-collapse: collapse; text-align: left">
       <thead>
         <tr style="background: #222; border-bottom: 1px solid #333">
@@ -94,58 +365,188 @@
       </thead>
       <tbody>
         <tr *ngIf="users().length === 0">
-           <td colspan="3" style="padding: 20px; text-align: center; color: #555;">No users found.</td>
+          <td colspan="3" style="padding: 20px; text-align: center; color: #555">
+            No users found.
+          </td>
         </tr>
         <tr *ngFor="let u of users()" style="border-bottom: 1px solid #222">
           <td style="padding: 15px">{{ u.email }}</td>
           <td style="padding: 15px">
-            <span [style.color]="u.is_subscribed ? '#00ffcc' : '#ff4d4d'">{{ u.is_subscribed ? 'Active' : 'Inactive' }}</span>
+            <span [style.color]="u.is_subscribed ? '#00ffcc' : '#ff4d4d'">{{
+              u.is_subscribed ? 'Active' : 'Inactive'
+            }}</span>
           </td>
           <td style="padding: 15px; color: #888">{{ u.charities?.name || 'None selected' }}</td>
         </tr>
       </tbody>
     </table>
   </div>
-
 </div>
 
-<div *ngIf="showWinnerModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(10px); padding: 15px; box-sizing: border-box;">
-    <div style="background: #111; border: 2px solid #00ffcc; border-radius: 24px; padding: 40px; width: 90%; max-width: 600px; text-align: center; box-shadow: 0 0 50px rgba(0, 255, 204, 0.2); max-height: 90vh; overflow-y: auto; box-sizing: border-box;">
-      
-      <div style="font-size: 4rem; margin-bottom: 15px">🏆</div>
-      <h1 style="color: #fff; margin: 0; font-size: 2.2rem; font-weight: 800">Draw Complete!</h1>
-      <p style="color: #888; margin-top: 10px; font-size: 1.1rem">Total Winners Found: <strong style="color: #00ffcc;">{{ totalWinners }}</strong></p>
+<div
+  *ngIf="showWinnerModal"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    box-sizing: border-box;
+  "
+>
+  <div
+    style="
+      background: #111;
+      border: 2px solid #00ffcc;
+      border-radius: 24px;
+      padding: 40px;
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+      box-shadow: 0 0 50px rgba(0, 255, 204, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    "
+  >
+    <div style="font-size: 4rem; margin-bottom: 15px">🏆</div>
+    <h1 style="color: #fff; margin: 0; font-size: 2.2rem; font-weight: 800">Draw Complete!</h1>
+    <p style="color: #888; margin-top: 10px; font-size: 1.1rem">
+      Total Winners Found: <strong style="color: #00ffcc">{{ totalWinners }}</strong>
+    </p>
 
-      <div style="display: flex; justify-content: center; gap: 10px; margin: 25px 0; flex-wrap: wrap;">
-        <span *ngFor="let num of lastWinningNumbers" style="background: #00ffcc; color: #000; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0, 255, 204, 0.3);">
-          {{ num }}
-        </span>
-      </div>
-
-      <div *ngIf="winnerDetails" style="text-align: left; margin-top: 30px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333;">
-        
-        <div style="margin-bottom: 25px;">
-          <h3 style="color: #ffcc00; margin: 0 0 10px 0; font-size: 1.1rem;">🎯 5-Match Jackpot (40% Pool)</h3>
-          <div *ngIf="winnerDetails.tier5.length === 0" style="color: #666; font-style: italic; font-size: 0.9rem;">No winners. Jackpot rolls over to next month.</div>
-          <div *ngFor="let email of winnerDetails.tier5" style="background: #222; padding: 10px; border-radius: 6px; color: #fff; border-left: 3px solid #ffcc00; margin-bottom: 5px; font-family: monospace;">{{ email }}</div>
-        </div>
-
-        <div style="margin-bottom: 25px;">
-          <h3 style="color: #00ffcc; margin: 0 0 10px 0; font-size: 1.1rem;">⭐ 4-Match Winners (35% Pool)</h3>
-          <div *ngIf="winnerDetails.tier4.length === 0" style="color: #666; font-style: italic; font-size: 0.9rem;">No winners this tier.</div>
-          <div *ngFor="let email of winnerDetails.tier4" style="background: #222; padding: 10px; border-radius: 6px; color: #fff; border-left: 3px solid #00ffcc; margin-bottom: 5px; font-family: monospace;">{{ email }}</div>
-        </div>
-
-        <div>
-          <h3 style="color: #635bff; margin: 0 0 10px 0; font-size: 1.1rem;">👍 3-Match Winners (25% Pool)</h3>
-          <div *ngIf="winnerDetails.tier3.length === 0" style="color: #666; font-style: italic; font-size: 0.9rem;">No winners this tier.</div>
-          <div *ngFor="let email of winnerDetails.tier3" style="background: #222; padding: 10px; border-radius: 6px; color: #fff; border-left: 3px solid #635bff; margin-bottom: 5px; font-family: monospace;">{{ email }}</div>
-        </div>
-
-      </div>
-
-      <button (click)="closeWinnerModal()" style="margin-top: 30px; background: #00ffcc; color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; font-size: 1rem; text-transform: uppercase;">
-        Acknowledge & Close
-      </button>
+    <div style="display: flex; justify-content: center; gap: 10px; margin: 25px 0; flex-wrap: wrap">
+      <span
+        *ngFor="let num of lastWinningNumbers"
+        style="
+          background: #00ffcc;
+          color: #000;
+          width: 45px;
+          height: 45px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          font-weight: 900;
+          font-size: 1.2rem;
+          box-shadow: 0 4px 10px rgba(0, 255, 204, 0.3);
+        "
+      >
+        {{ num }}
+      </span>
     </div>
+
+    <div
+      *ngIf="winnerDetails"
+      style="
+        text-align: left;
+        margin-top: 30px;
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #333;
+      "
+    >
+      <div style="margin-bottom: 25px">
+        <h3 style="color: #ffcc00; margin: 0 0 10px 0; font-size: 1.1rem">
+          🎯 5-Match Jackpot (40% Pool)
+        </h3>
+        <div
+          *ngIf="winnerDetails.tier5.length === 0"
+          style="color: #666; font-style: italic; font-size: 0.9rem"
+        >
+          No winners. Jackpot rolls over to next month.
+        </div>
+        <div
+          *ngFor="let email of winnerDetails.tier5"
+          style="
+            background: #222;
+            padding: 10px;
+            border-radius: 6px;
+            color: #fff;
+            border-left: 3px solid #ffcc00;
+            margin-bottom: 5px;
+            font-family: monospace;
+          "
+        >
+          {{ email }}
+        </div>
+      </div>
+
+      <div style="margin-bottom: 25px">
+        <h3 style="color: #00ffcc; margin: 0 0 10px 0; font-size: 1.1rem">
+          ⭐ 4-Match Winners (35% Pool)
+        </h3>
+        <div
+          *ngIf="winnerDetails.tier4.length === 0"
+          style="color: #666; font-style: italic; font-size: 0.9rem"
+        >
+          No winners this tier.
+        </div>
+        <div
+          *ngFor="let email of winnerDetails.tier4"
+          style="
+            background: #222;
+            padding: 10px;
+            border-radius: 6px;
+            color: #fff;
+            border-left: 3px solid #00ffcc;
+            margin-bottom: 5px;
+            font-family: monospace;
+          "
+        >
+          {{ email }}
+        </div>
+      </div>
+
+      <div>
+        <h3 style="color: #635bff; margin: 0 0 10px 0; font-size: 1.1rem">
+          👍 3-Match Winners (25% Pool)
+        </h3>
+        <div
+          *ngIf="winnerDetails.tier3.length === 0"
+          style="color: #666; font-style: italic; font-size: 0.9rem"
+        >
+          No winners this tier.
+        </div>
+        <div
+          *ngFor="let email of winnerDetails.tier3"
+          style="
+            background: #222;
+            padding: 10px;
+            border-radius: 6px;
+            color: #fff;
+            border-left: 3px solid #635bff;
+            margin-bottom: 5px;
+            font-family: monospace;
+          "
+        >
+          {{ email }}
+        </div>
+      </div>
+    </div>
+
+    <button
+      (click)="closeWinnerModal()"
+      style="
+        margin-top: 30px;
+        background: #00ffcc;
+        color: #000;
+        border: none;
+        padding: 15px;
+        border-radius: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        width: 100%;
+        font-size: 1rem;
+        text-transform: uppercase;
+      "
+    >
+      Acknowledge & Close
+    </button>
+  </div>
 </div>

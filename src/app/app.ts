@@ -1,19 +1,17 @@
 import { Component, OnInit, signal, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
 import { Supabase } from './services/supabase';
 
-// Component Imports
 import { Login } from './components/login/login';
 import { UserDashboard } from './components/user-dashboard/user-dashboard';
-import { AdminDashboard } from './components/admin-dashboard/admin-dashboard';
 import { LandingPage } from './components/landing-page/landing-page';
 import { PaymentSuccess } from './components/payment-success/payment-success';
+import { AdminDashboard } from "./components/admin-dashboard/admin-dashboard";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, Login, UserDashboard, AdminDashboard, LandingPage, PaymentSuccess],
+  imports: [CommonModule, Login, UserDashboard, LandingPage, PaymentSuccess, AdminDashboard],
   templateUrl: './app.html'
 })
 export class App implements OnInit {
@@ -25,7 +23,6 @@ export class App implements OnInit {
 
   constructor(
     private supabase: Supabase, 
-    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     if (isPlatformBrowser(this.platformId)) {
@@ -40,7 +37,6 @@ export class App implements OnInit {
       
       if (user) {
         this.showLandingPage.set(false);
-        // We run this without 'await' so it doesn't block the UI if the DB is slow
         this.checkUserRole(user.id);
       } else {
         this.userRole.set(null);
@@ -51,7 +47,7 @@ export class App implements OnInit {
 
   async checkUserRole(userId: string) {
     try {
-      // Set a default immediately so the UI isn't empty
+
       this.userRole.set('user');
       this.view.set('user');
 
@@ -61,7 +57,7 @@ export class App implements OnInit {
         this.userRole.set('admin');
         this.view.set('admin');
       }
-      // If profile is 'user', the defaults we set above will stay
+
     } catch (err) {
       console.error('Role check failed, defaulting to user view:', err);
     }

@@ -1,0 +1,166 @@
+<div
+  style="
+    padding: 40px 5%;
+    max-width: 1000px;
+    margin: 0 auto;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  "
+>
+  <div *ngIf="isLoading()" style="text-align: center; padding: 100px; color: #888">
+    Loading profile...
+  </div>
+
+  <div *ngIf="!isLoading() && !charity()" style="text-align: center; padding: 100px">
+    <h2>Charity not found.</h2>
+    <button
+      (click)="goBack()"
+      style="
+        background: transparent;
+        color: #00ffcc;
+        border: 1px solid #00ffcc;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+      "
+    >
+      Return to Directory
+    </button>
+  </div>
+
+  <ng-container *ngIf="charity() as data">
+    <div *ngIf="!isLoading()">
+      <button
+        (click)="goBack()"
+        style="
+          background: transparent;
+          color: #aaa;
+          border: none;
+          cursor: pointer;
+          font-size: 1rem;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        "
+      >
+        ← Back to Directory
+      </button>
+
+      <div
+        [style.backgroundImage]="
+          'url(' +
+          (data.image_url ||
+            'https://images.unsplash.com/photo-1587330979470-3595ac045ab0?q=80&w=2000&auto=format&fit=crop') +
+          ')'
+        "
+        style="
+          width: 100%;
+          height: 300px;
+          background-color: #1a1a1a;
+          background-size: cover;
+          background-position: center;
+          border-radius: 20px;
+          margin-bottom: 40px;
+          position: relative;
+          border: 1px solid #333;
+        "
+      >
+        <div
+          style="
+            position: absolute;
+            bottom: -40px;
+            left: 40px;
+            background: #000;
+            border: 2px solid #333;
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+          "
+        >
+          🤝
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 40px; margin-top: 60px">
+        <div>
+          <h1 style="font-size: 2.5rem; margin: 0 0 15px 0">{{ data.name }}</h1>
+          <p style="color: #aaa; font-size: 1.1rem; line-height: 1.7; margin-bottom: 30px">
+            {{ data.description }}
+          </p>
+
+          <button
+            (click)="donateDirectly(data.name)"
+            style="
+              background: #00ffcc;
+              color: #000;
+              font-weight: 800;
+              border: none;
+              padding: 16px 32px;
+              border-radius: 12px;
+              font-size: 1.1rem;
+              cursor: pointer;
+              transition: 0.2s;
+            "
+          >
+            Donate $20 Directly to {{ data.name }}
+          </button>
+        </div>
+
+        <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 25px">
+          <h3
+            style="
+              margin: 0 0 20px 0;
+              color: #fff;
+              border-bottom: 1px solid #333;
+              padding-bottom: 10px;
+            "
+          >
+            ⛳ Upcoming Events
+          </h3>
+
+          <div
+            *ngIf="!data.upcoming_events || data.upcoming_events.length === 0"
+            style="color: #666; font-style: italic; font-size: 0.9rem"
+          >
+            No events scheduled at this time.
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 15px">
+            <div
+              *ngFor="let event of data.upcoming_events"
+              style="
+                background: #1a1a1a;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 3px solid #635bff;
+              "
+            >
+              <strong style="display: block; color: #fff; margin-bottom: 5px">{{
+                event.name
+              }}</strong>
+              <div
+                style="
+                  color: #888;
+                  font-size: 0.85rem;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 3px;
+                "
+              >
+                <span>📅 {{ event.date }}</span>
+                <span>📍 {{ event.location }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

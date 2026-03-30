@@ -1,0 +1,103 @@
+<div
+  style="
+    padding: 60px 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background-color: #050505;
+  "
+>
+  <div style="text-align: center; margin-bottom: 50px">
+    <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 15px">
+      Discover Your <span style="color: #00ffcc">Impact</span>
+    </h1>
+    <p style="color: #888; font-size: 1.2rem; max-width: 600px; margin: 0 auto">
+      Explore our network of verified charities. Every swing you take helps support their mission.
+    </p>
+  </div>
+
+  <div style="margin-bottom: 40px; text-align: center">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      placeholder="Search for a cause or charity name..."
+      style="
+        width: 100%;
+        max-width: 600px;
+        padding: 18px;
+        border-radius: 12px;
+        border: 1px solid #333;
+        background: #111;
+        color: white;
+        font-size: 1.1rem;
+        outline: none;
+      "
+    />
+  </div>
+
+  <div
+    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px"
+  >
+    <div
+      *ngIf="filteredCharities().length === 0"
+      style="
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-style: italic;
+      "
+    >
+      No charities found matching your search.
+    </div>
+
+    <div
+      *ngFor="let charity of filteredCharities()"
+      style="
+        background: #111;
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        transition:
+          transform 0.2s,
+          border-color 0.2s;
+        cursor: pointer;
+      "
+      onmouseover="
+        this.style.transform = 'translateY(-5px)';
+        this.style.borderColor = '#00ffcc';
+      "
+      onmouseout="
+        this.style.transform = 'translateY(0)';
+        this.style.borderColor = '#222';
+      "
+    >
+      <div style="font-size: 3rem; margin-bottom: 15px">🤝</div>
+      <h3 style="margin: 0 0 10px 0; font-size: 1.5rem; color: #fff">{{ charity.name }}</h3>
+      <p style="color: #888; font-size: 0.95rem; line-height: 1.6; flex-grow: 1">
+        {{ charity.description }}
+      </p>
+
+      <button
+        (click)="viewProfile(charity.id)"
+        style="
+          margin-top: 20px;
+          background: transparent;
+          color: #00ffcc;
+          border: 1px solid #00ffcc;
+          padding: 10px;
+          border-radius: 8px;
+          font-weight: bold;
+          width: 100%;
+          cursor: pointer;
+        "
+      >
+        View Profile
+      </button>
+    </div>
+  </div>
+</div>

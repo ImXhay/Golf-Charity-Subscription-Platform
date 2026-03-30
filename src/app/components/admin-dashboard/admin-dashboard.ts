@@ -8,24 +8,28 @@ import { Supabase } from '../../services/supabase';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-dashboard.html',
-  styleUrl: './admin-dashboard.css'
+  styleUrl: './admin-dashboard.css',
 })
 export class AdminDashboard implements OnInit {
   users = signal<any[]>([]);
   charities = signal<any[]>([]);
   claims = signal<any[]>([]);
   draws = signal<any[]>([]);
-  
+
   isProcessing = signal(false);
   statusMsg = signal('');
-  newName = ''; newDesc = '';
-  
+  newName = '';
+  newDesc = '';
+
   showWinnerModal = false;
   totalWinners = 0;
   totalPool = 0;
   rolloverAmount = 0;
   lastWinningNumbers: number[] = [];
   winnerDetails: any = null;
+
+  charityTotals: { name: string; amount: number; donors: number }[] = [];
+  MONTHLY_SUB_FEE = 10;
 
   constructor(private supabase: Supabase) {}
 
@@ -38,25 +42,66 @@ export class AdminDashboard implements OnInit {
     this.charities.set(await this.supabase.getCharities());
     this.claims.set(await this.supabase.getPendingClaims());
     this.draws.set(await this.supabase.getLatestDraws());
+    this.calculateCharityContributions();
+  }
+  calculateCharityContributions() {
+    const totals: Record<string, { name: string; amount: number; donors: number }> = {};
+
+    const MONTHLY_FEE = 10;
+    const YEARLY_FEE_MONTHLY_EQUIVALENT = 8;
+
+    this.users().forEach((user) => {
+      if (user.is_subscribed && user.charities?.name) {
+        const charityName = user.charities.name;
+        const percentage = user.charity_percentage || 10;
+
+        const baseFee =
+          user.subscription_plan === 'Yearly' ? YEARLY_FEE_MONTHLY_EQUIVALENT : MONTHLY_FEE;
+
+        const contribution = baseFee * (percentage / 100);
+
+        if (!totals[charityName]) {
+          totals[charityName] = { name: charityName, amount: 0, donors: 0 };
+        }
+
+        totals[charityName].amount += contribution;
+        totals[charityName].donors += 1;
+      }
+    });
+
+    this.charityTotals = Object.values(totals).sort((a, b) => b.amount - a.amount);
   }
 
-  async runMonthlyDraw() {
-    if (!confirm('Execute the monthly draw?')) return;
+  async runDraw(isSimulation: boolean) {
+    const confirmMessage = isSimulation
+      ? 'Run a simulation of the monthly draw? No data will be saved.'
+      : 'WARNING: Execute the OFFICIAL monthly draw? This will save results and notify winners.';
+
+    if (!confirm(confirmMessage)) return;
+
     this.isProcessing.set(true);
-    
+
     try {
-      const res = await this.supabase.runMonthlyDraw();
+      const res = await this.supabase.runMonthlyDraw(isSimulation);
+
       if (res.success) {
         this.winnerDetails = res.details;
         this.totalWinners = res.totalWinners;
         this.totalPool = res.totalPool;
         this.rolloverAmount = res.rolloverAmount;
         this.lastWinningNumbers = res.winningNumbers;
+
         this.showWinnerModal = true;
-        await this.loadData();
+
+        if (!isSimulation) {
+          await this.loadData();
+        }
       } else {
-        alert('Error: ' + res.error);
+        alert('Draw failed: ' + res.error);
       }
+    } catch (error) {
+      console.error('Error running draw:', error);
+      alert('An unexpected error occurred during the draw.');
     } finally {
       this.isProcessing.set(false);
     }
@@ -70,7 +115,8 @@ export class AdminDashboard implements OnInit {
 
   async addNewCharity() {
     if (await this.supabase.addCharity(this.newName, this.newDesc)) {
-      this.newName = ''; this.newDesc = '';
+      this.newName = '';
+      this.newDesc = '';
       await this.loadData();
     }
   }
@@ -82,6 +128,10 @@ export class AdminDashboard implements OnInit {
     }
   }
 
-  closeWinnerModal() { this.showWinnerModal = false; }
-  async logout() { await this.supabase.logout(); }
+  closeWinnerModal() {
+    this.showWinnerModal = false;
+  }
+  async logout() {
+    await this.supabase.logout();
+  }
 }
