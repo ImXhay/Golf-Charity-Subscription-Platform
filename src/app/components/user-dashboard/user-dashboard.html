@@ -1,4 +1,5 @@
 <div
+  *ngIf="profileData()"
   style="
     padding: clamp(16px, 5vw, 40px);
     max-width: 1200px;
@@ -26,7 +27,7 @@
       </h1>
       <p style="color: #666; margin: 5px 0 0 0">
         Welcome back,
-        <span style="color: #fff">{{ profileData()?.email?.split('@')[0] || 'Golfer' }}</span>
+        <span style="color: #fff">{{ user?.email?.split('@')[0] || 'Golfer' }}</span>
       </p>
     </div>
     <button
@@ -76,7 +77,7 @@
       </p>
     </div>
 
-    <div *ngIf="!profileData()?.is_subscribed" style="margin-top: 15px">
+    <div *ngIf="profileData() && !profileData().is_subscribed" style="margin-top: 15px">
       <div style="display: flex; gap: 10px; margin-bottom: 15px">
         <button
           (click)="subscriptionPlan.set('Monthly')"
@@ -159,7 +160,7 @@
       </div>
 
       <button
-        *ngIf="!profileData()?.is_subscribed"
+        *ngIf="profileData() && !profileData().is_subscribed"
         (click)="subscribeToPlatform()"
         [disabled]="isUpdatingSubscription()"
         style="
@@ -279,12 +280,21 @@
       >
         <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; color: #ffcc00">🏆 Claim Your Winnings</h3>
 
-        <div *ngIf="winnings().paymentStatus === 'Action Required: Submit Proof' || winnings().paymentStatus === 'Rejected'">
+        <div
+          *ngIf="
+            winnings().paymentStatus === 'Action Required: Submit Proof' ||
+            winnings().paymentStatus === 'Rejected'
+          "
+        >
           <p style="color: #666; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.5">
             Matched numbers in the latest draw? Upload a screenshot of your official golf app to
             verify your submitted scores and initiate your payout.
-            <span *ngIf="winnings().paymentStatus === 'Rejected'" style="color: #ff4d4d; display: block; margin-top: 5px;">
-              Your previous submission was rejected by the admin. Please upload a clear, correct screenshot.
+            <span
+              *ngIf="winnings().paymentStatus === 'Rejected'"
+              style="color: #ff4d4d; display: block; margin-top: 5px"
+            >
+              Your previous submission was rejected by the admin. Please upload a clear, correct
+              screenshot.
             </span>
           </p>
 
@@ -334,24 +344,29 @@
           </div>
         </div>
 
-        <div *ngIf="winnings().paymentStatus === 'Pending'" style="padding: 15px 0; text-align: center;">
-          <p style="color: #00ffcc; font-size: 0.95rem; font-weight: 700; margin: 0;">
+        <div
+          *ngIf="winnings().paymentStatus === 'Pending'"
+          style="padding: 15px 0; text-align: center"
+        >
+          <p style="color: #00ffcc; font-size: 0.95rem; font-weight: 700; margin: 0">
             ⏳ Proof Under Review
           </p>
-          <p style="color: #888; font-size: 0.85rem; margin-top: 5px;">
+          <p style="color: #888; font-size: 0.85rem; margin-top: 5px">
             An administrator is verifying your screenshot. Please check back soon.
           </p>
         </div>
 
-        <div *ngIf="winnings().paymentStatus === 'Paid'" style="padding: 15px 0; text-align: center;">
-          <p style="color: #00ffcc; font-size: 1.1rem; font-weight: 800; margin: 0;">
+        <div
+          *ngIf="winnings().paymentStatus === 'Paid'"
+          style="padding: 15px 0; text-align: center"
+        >
+          <p style="color: #00ffcc; font-size: 1.1rem; font-weight: 800; margin: 0">
             ✅ Verified and Paid!
           </p>
-          <p style="color: #888; font-size: 0.85rem; margin-top: 5px;">
+          <p style="color: #888; font-size: 0.85rem; margin-top: 5px">
             Your winnings have been processed successfully.
           </p>
         </div>
-
       </div>
 
       <div

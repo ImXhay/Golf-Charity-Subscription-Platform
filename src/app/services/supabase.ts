@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable({ providedIn: 'root' })
@@ -22,7 +22,15 @@ export class Supabase {
     if (error || !data.user) return { success: false, error: error?.message };
     const { error: pErr } = await this.client
       .from('profiles')
-      .insert([{ id: data.user.id, email, selected_charity_id: charityId, is_subscribed: false }]);
+      .insert([
+        {
+          id: data.user.id,
+          email,
+          selected_charity_id: charityId,
+          is_subscribed: false,
+          total_paid: 0,
+        },
+      ]);
     return { success: !pErr, user: data.user, error: pErr?.message };
   }
 
@@ -43,8 +51,14 @@ export class Supabase {
     return (await this.client.from('charities').select('*')).data || [];
   }
 
-  async addCharity(name: string, description: string) {
-    const { error } = await this.client.from('charities').insert([{ name, description }]);
+  async addCharity(name: string, description: string, imageUrl?: string | null) {
+    const { error } = await this.client.from('charities').insert([
+      {
+        name,
+        description,
+        image_url: imageUrl,
+      },
+    ]);
     return !error;
   }
 
@@ -56,36 +70,28 @@ export class Supabase {
   async saveCharitySelection(userId: string, charityId: string, percentage: number) {
     const { error } = await this.client
       .from('profiles')
-      .update({
-        selected_charity_id: charityId,
-        charity_percentage: percentage,
-      })
+      .update({ selected_charity_id: charityId, charity_percentage: percentage })
       .eq('id', userId);
     return !error;
   }
 
   async getCharityById(id: string) {
     const { data, error } = await this.client.from('charities').select('*').eq('id', id).single();
-
-    if (error) {
-      console.error('Error fetching charity:', error);
-      return null;
-    }
+    if (error) return null;
     return data;
   }
 
   async submitGolfScore(userId: string, score: number) {
     if (score < 1 || score > 45) return false;
-
     const { data: scores } = await this.client
       .from('scores')
       .select('id')
       .eq('profile_id', userId)
       .order('created_at', { ascending: true });
+
     if (scores && scores.length >= 5) {
       await this.client.from('scores').delete().eq('id', scores[0].id);
     }
-
     const { error } = await this.client
       .from('scores')
       .insert([{ profile_id: userId, score_value: score }]);
@@ -101,28 +107,21 @@ export class Supabase {
         .from('profiles')
         .select('id, email')
         .eq('is_subscribed', true);
-
       let winNums: number[] = [];
 
-      //Weight by most frequent user scores
       if (drawType === 'algorithmic') {
         const { data: allScores } = await this.client.from('scores').select('score_value');
         const freq: Record<number, number> = {};
         allScores?.forEach((s) => (freq[s.score_value] = (freq[s.score_value] || 0) + 1));
-
-        // Sort numbers by frequency (highest first)
         const sortedByFreq = Object.keys(freq)
           .map(Number)
           .sort((a, b) => freq[b] - freq[a]);
-
         winNums = sortedByFreq.slice(0, 5);
-        // Fill remaining if less than 5 scores exist in DB
         while (winNums.length < 5) {
           const r = Math.floor(Math.random() * 45) + 1;
           if (!winNums.includes(r)) winNums.push(r);
         }
       } else {
-        // Generate 5 unique numbers
         while (winNums.length < 5) {
           const r = Math.floor(Math.random() * 45) + 1;
           if (!winNums.includes(r)) winNums.push(r);
@@ -145,7 +144,6 @@ export class Supabase {
           if (scores) {
             const userScores = scores.map((s) => s.score_value);
             const matchCount = userScores.filter((s) => winNums.includes(s)).length;
-
             if (matchCount === 5) winners.tier5.push(sub);
             else if (matchCount === 4) winners.tier4.push(sub);
             else if (matchCount === 3) winners.tier3.push(sub);
@@ -153,16 +151,14 @@ export class Supabase {
         }
       }
 
-      // PRIZE MATH
       let rollover = 0;
       const tier5Payout = winners.tier5.length > 0 ? (pool * 0.4) / winners.tier5.length : 0;
       const tier4Payout = winners.tier4.length > 0 ? (pool * 0.35) / winners.tier4.length : 0;
       const tier3Payout = winners.tier3.length > 0 ? (pool * 0.25) / winners.tier3.length : 0;
 
-      if (winners.tier5.length === 0) rollover = pool * 0.4; // 40% rollover if no jackpot winner
+      if (winners.tier5.length === 0) rollover = pool * 0.4;
 
       if (!isSimulation) {
-        // Save draw results
         const { error } = await this.client.from('monthly_draws').insert([
           {
             winning_numbers: winNums,
@@ -225,11 +221,16 @@ export class Supabase {
     return !error;
   }
 
-  async adminUpdateCharity(charityId: string, name: string, description: string) {
-    const { error } = await this.client
-      .from('charities')
-      .update({ name, description })
-      .eq('id', charityId);
+  async adminUpdateCharity(
+    charityId: string,
+    name: string,
+    description: string,
+    imageUrl?: string | null,
+  ) {
+    const updatePayload: any = { name, description };
+    if (imageUrl) updatePayload.image_url = imageUrl;
+
+    const { error } = await this.client.from('charities').update(updatePayload).eq('id', charityId);
     return !error;
   }
 
@@ -254,12 +255,21 @@ export class Supabase {
     const { error } = await this.client.from('winner_claims').update({ status }).eq('id', id);
 
     if (status === 'Paid' && !error) {
-      const { data: claim } = await this.client.from('winner_claims').select('profile_id').eq('id', id).single();
-      
+      const { data: claim } = await this.client
+        .from('winner_claims')
+        .select('profile_id')
+        .eq('id', id)
+        .single();
       if (claim) {
-        const { data: profile } = await this.client.from('profiles').select('total_won').eq('id', claim.profile_id).single();
-        
-        await this.client.from('profiles').update({ total_paid: profile?.total_won || 0 }).eq('id', claim.profile_id);
+        const { data: profile } = await this.client
+          .from('profiles')
+          .select('total_won')
+          .eq('id', claim.profile_id)
+          .single();
+        await this.client
+          .from('profiles')
+          .update({ total_paid: profile?.total_won || 0 })
+          .eq('id', claim.profile_id);
       }
     }
     return !error;
@@ -279,7 +289,6 @@ export class Supabase {
 
   async uploadProof(file: File, userId: string) {
     const filePath = `proofs/${userId}_${Date.now()}_${file.name}`;
-
     const { error } = await this.client.storage.from('proofs').upload(filePath, file);
     if (error) return { success: false, error: error.message };
 
@@ -288,13 +297,9 @@ export class Supabase {
   }
 
   async submitClaim(userId: string, proofUrl: string) {
-    const { error } = await this.client.from('winner_claims').insert([
-      {
-        profile_id: userId,
-        proof_url: proofUrl,
-        status: 'Pending',
-      },
-    ]);
+    const { error } = await this.client
+      .from('winner_claims')
+      .insert([{ profile_id: userId, proof_url: proofUrl, status: 'Pending' }]);
     return !error;
   }
 
@@ -306,8 +311,16 @@ export class Supabase {
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
-
     if (error) return null;
     return data;
+  }
+
+  async uploadCharityImage(file: File) {
+    const filePath = `${Date.now()}_${file.name}`;
+    const { error } = await this.client.storage.from('charities').upload(filePath, file);
+    if (error) return { success: false, error: error.message };
+
+    const { data } = this.client.storage.from('charities').getPublicUrl(filePath);
+    return { success: true, url: data.publicUrl };
   }
 }

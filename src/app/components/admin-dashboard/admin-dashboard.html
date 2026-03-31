@@ -48,11 +48,21 @@
         Execute the algorithm to select winning numbers and notify users.
       </p>
     </div>
-    
-    <div style="display: flex; gap: 15px; align-items: center;">
-      <select 
-        [(ngModel)]="drawType" 
-        style="padding: 14px; border-radius: 8px; background: #222; color: #00ffcc; border: 1px solid #333; outline: none; cursor: pointer; font-weight: bold;">
+
+    <div style="display: flex; gap: 15px; align-items: center">
+      <select
+        [(ngModel)]="drawType"
+        style="
+          padding: 14px;
+          border-radius: 8px;
+          background: #222;
+          color: #00ffcc;
+          border: 1px solid #333;
+          outline: none;
+          cursor: pointer;
+          font-weight: bold;
+        "
+      >
         <option value="random">🎲 Random Draw</option>
         <option value="algorithmic">🧠 Algorithmic Draw</option>
       </select>
@@ -87,7 +97,7 @@
       </button>
     </div>
   </div>
-  
+
   <div
     style="
       display: grid;
@@ -115,7 +125,7 @@
 
       <input
         type="text"
-        [(ngModel)]="newName"
+        [(ngModel)]="adminState.newCharityName"
         placeholder="Charity Title (e.g. Red Cross)"
         style="
           width: 100%;
@@ -130,7 +140,7 @@
       />
 
       <textarea
-        [(ngModel)]="newDesc"
+        [(ngModel)]="adminState.newCharityDesc"
         placeholder="Describe the charity's mission..."
         rows="3"
         style="
@@ -145,6 +155,26 @@
           resize: none;
         "
       ></textarea>
+
+      <label style="color: #aaa; font-size: 0.85rem; margin-bottom: 5px; display: block"
+        >Charity Banner Image</label
+      >
+      <input
+        type="file"
+        (change)="onCharityFileSelected($event)"
+        accept="image/*"
+        style="
+          width: 100%;
+          box-sizing: border-box;
+          padding: 10px;
+          background: #1a1a1a;
+          border: 1px dashed #333;
+          color: #aaa;
+          border-radius: 6px;
+          margin-bottom: 20px;
+          cursor: pointer;
+        "
+      />
 
       <button
         (click)="addNewCharity()"
@@ -207,13 +237,22 @@
               >{{ charity.description }}</span
             >
           </div>
-          
-          <div style="display: flex; gap: 8px;">
-            <button 
-              (click)="editCharity(charity)" 
-              style="background: transparent; color: #ffcc00; border: 1px solid rgba(255, 204, 0, 0.4); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: 0.2s;"
-              onmouseover="this.style.background='rgba(255, 204, 0, 0.1)'"
-              onmouseout="this.style.background='transparent'"
+
+          <div style="display: flex; gap: 8px">
+            <button
+              (click)="editCharity(charity)"
+              style="
+                background: transparent;
+                color: #ffcc00;
+                border: 1px solid rgba(255, 204, 0, 0.4);
+                padding: 6px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.85rem;
+                transition: 0.2s;
+              "
+              onmouseover="this.style.background = 'rgba(255, 204, 0, 0.1)'"
+              onmouseout="this.style.background = 'transparent'"
             >
               Edit
             </button>
@@ -229,8 +268,8 @@
                 font-size: 0.85rem;
                 transition: 0.2s;
               "
-              onmouseover="this.style.background='rgba(255, 77, 77, 0.2)'"
-              onmouseout="this.style.background='rgba(255, 77, 77, 0.1)'"
+              onmouseover="this.style.background = 'rgba(255, 77, 77, 0.2)'"
+              onmouseout="this.style.background = 'rgba(255, 77, 77, 0.1)'"
             >
               Delete
             </button>
@@ -239,7 +278,7 @@
       </div>
     </div>
   </div>
-  
+
   <h2 style="margin-top: 40px">Reports & Analytics: Charity Payouts</h2>
   <div
     style="
@@ -288,7 +327,40 @@
       </div>
     </div>
   </div>
-  
+
+  <h2 style="margin-top: 40px">Past Draws & History</h2>
+  <div
+    style="
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 50px;
+    "
+  >
+    <table style="width: 100%; border-collapse: collapse; text-align: left">
+      <tr style="background: #222; border-bottom: 1px solid #333">
+        <th style="padding: 15px; color: #aaa">Date</th>
+        <th style="padding: 15px; color: #aaa">Draw Type</th>
+        <th style="padding: 15px; color: #aaa">Winning Numbers</th>
+        <th style="padding: 15px; color: #aaa">Total Pool</th>
+      </tr>
+      <tr *ngIf="draws().length === 0">
+        <td colspan="4" style="padding: 20px; text-align: center; color: #555">
+          No draws executed yet.
+        </td>
+      </tr>
+      <tr *ngFor="let draw of draws()" style="border-bottom: 1px solid #222">
+        <td style="padding: 15px; color: #fff">{{ draw.draw_date | date: 'MMM d, y' }}</td>
+        <td style="padding: 15px; text-transform: capitalize">{{ draw.draw_type }}</td>
+        <td style="padding: 15px; letter-spacing: 2px; color: #00ffcc; font-weight: bold">
+          {{ draw.winning_numbers.join(' - ') }}
+        </td>
+        <td style="padding: 15px; color: #ffcc00; font-weight: bold">${{ draw.total_pool }}</td>
+      </tr>
+    </table>
+  </div>
+
   <h2 style="margin-top: 40px">Pending Verifications</h2>
   <div
     style="
@@ -402,28 +474,124 @@
             }}</span>
           </td>
           <td style="padding: 15px; color: #888">{{ u.charities?.name || 'None selected' }}</td>
-          
-          <td style="padding: 15px">
-            <button 
-              (click)="toggleSubscription(u)" 
+
+          <td style="padding: 15px; display: flex; gap: 10px">
+            <button
+              (click)="openUserScores(u)"
               style="
-                background: transparent; 
-                border: 1px solid #555; 
-                color: #fff; 
-                padding: 6px 12px; 
-                border-radius: 4px; 
+                background: rgba(0, 255, 204, 0.1);
+                border: 1px solid #00ffcc;
+                color: #00ffcc;
+                padding: 6px 12px;
+                border-radius: 4px;
                 cursor: pointer;
-                transition: 0.2s;
+                font-weight: bold;
               "
-              onmouseover="this.style.background='#333'; this.style.borderColor='#888'"
-              onmouseout="this.style.background='transparent'; this.style.borderColor='#555'"
             >
-               Toggle Sub
+              Edit Scores
+            </button>
+            <button
+              (click)="toggleSubscription(u)"
+              style="
+                background: transparent;
+                border: 1px solid #555;
+                color: #fff;
+                padding: 6px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+              "
+            >
+              Toggle Sub
             </button>
           </td>
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<div
+  *ngIf="showScoreModal"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+    padding: 15px;
+  "
+>
+  <div
+    style="
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+    "
+  >
+    <h2 style="margin-top: 0; border-bottom: 1px solid #222; padding-bottom: 15px">
+      Manage Scores: <span style="color: #00ffcc">{{ editingUser?.email }}</span>
+    </h2>
+
+    <div
+      *ngIf="editingUserScores.length === 0"
+      style="color: #666; padding: 20px 0; text-align: center"
+    >
+      This user has no recorded scores.
+    </div>
+
+    <div
+      *ngFor="let s of editingUserScores"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #1a1a1a;
+      "
+    >
+      <div>
+        <span style="color: #888; font-size: 0.85rem; display: block">{{
+          s.created_at | date: 'short'
+        }}</span>
+        <span style="font-size: 1.5rem; font-weight: bold; color: #fff">{{ s.score_value }}</span>
+      </div>
+      <button
+        (click)="saveAdminScore(s)"
+        style="
+          background: #222;
+          color: #ffcc00;
+          border: 1px dashed #ffcc00;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+        "
+      >
+        Override Score
+      </button>
+    </div>
+
+    <button
+      (click)="closeScoreModal()"
+      style="
+        margin-top: 20px;
+        background: #333;
+        color: #fff;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        width: 100%;
+        cursor: pointer;
+        font-weight: bold;
+      "
+    >
+      Done
+    </button>
   </div>
 </div>
 
@@ -499,23 +667,12 @@
         <h3 style="color: #ffcc00; margin: 0 0 10px 0; font-size: 1.1rem">
           🎯 5-Match Jackpot (40% Pool)
         </h3>
-        <div
-          *ngIf="winnerDetails.tier5.length === 0"
-          style="color: #666; font-style: italic; font-size: 0.9rem"
-        >
+        <div *ngIf="winnerDetails.tier5.length === 0" style="color: #666; font-style: italic; font-size: 0.9rem">
           No winners. Jackpot rolls over to next month.
         </div>
         <div
           *ngFor="let winner of winnerDetails.tier5"
-          style="
-            background: #222;
-            padding: 10px;
-            border-radius: 6px;
-            color: #fff;
-            border-left: 3px solid #ffcc00;
-            margin-bottom: 5px;
-            font-family: monospace;
-          "
+          style="background: #222; padding: 10px; border-radius: 6px; color: #fff; border-left: 3px solid #ffcc00; margin-bottom: 5px; font-family: monospace;"
         >
           {{ winner.email }}
         </div>
@@ -525,23 +682,12 @@
         <h3 style="color: #00ffcc; margin: 0 0 10px 0; font-size: 1.1rem">
           ⭐ 4-Match Winners (35% Pool)
         </h3>
-        <div
-          *ngIf="winnerDetails.tier4.length === 0"
-          style="color: #666; font-style: italic; font-size: 0.9rem"
-        >
+        <div *ngIf="winnerDetails.tier4.length === 0" style="color: #666; font-style: italic; font-size: 0.9rem">
           No winners this tier.
         </div>
         <div
           *ngFor="let winner of winnerDetails.tier4"
-          style="
-            background: #222;
-            padding: 10px;
-            border-radius: 6px;
-            color: #fff;
-            border-left: 3px solid #00ffcc;
-            margin-bottom: 5px;
-            font-family: monospace;
-          "
+          style="background: #222; padding: 10px; border-radius: 6px; color: #fff; border-left: 3px solid #00ffcc; margin-bottom: 5px; font-family: monospace;"
         >
           {{ winner.email }}
         </div>
@@ -551,23 +697,12 @@
         <h3 style="color: #635bff; margin: 0 0 10px 0; font-size: 1.1rem">
           👍 3-Match Winners (25% Pool)
         </h3>
-        <div
-          *ngIf="winnerDetails.tier3.length === 0"
-          style="color: #666; font-style: italic; font-size: 0.9rem"
-        >
+        <div *ngIf="winnerDetails.tier3.length === 0" style="color: #666; font-style: italic; font-size: 0.9rem">
           No winners this tier.
         </div>
         <div
           *ngFor="let winner of winnerDetails.tier3"
-          style="
-            background: #222;
-            padding: 10px;
-            border-radius: 6px;
-            color: #fff;
-            border-left: 3px solid #635bff;
-            margin-bottom: 5px;
-            font-family: monospace;
-          "
+          style="background: #222; padding: 10px; border-radius: 6px; color: #fff; border-left: 3px solid #635bff; margin-bottom: 5px; font-family: monospace;"
         >
           {{ winner.email }}
         </div>

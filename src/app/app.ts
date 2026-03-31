@@ -15,6 +15,7 @@ import { AdminDashboard } from "./components/admin-dashboard/admin-dashboard";
   templateUrl: './app.html'
 })
 export class App implements OnInit {
+  isAuthReady = signal(false);
   currentUser = signal<any>(null);
   userRole = signal<'user' | 'admin' | null>(null);
   view = signal<'user' | 'admin'>('user');
@@ -31,6 +32,18 @@ export class App implements OnInit {
   }
 
   async ngOnInit() {
+    const { data: { session } } = await this.supabase.client.auth.getSession();
+    
+    if (session?.user) {
+      this.currentUser.set(session.user);
+      this.showLandingPage.set(false);
+      await this.checkUserRole(session.user.id);
+    } else {
+      if (!this.isSuccessPage()) this.showLandingPage.set(true);
+    }
+    
+    this.isAuthReady.set(true);
+
     this.supabase.client.auth.onAuthStateChange(async (event, session) => {
       const user = session?.user || null;
       this.currentUser.set(user);
@@ -47,7 +60,6 @@ export class App implements OnInit {
 
   async checkUserRole(userId: string) {
     try {
-
       this.userRole.set('user');
       this.view.set('user');
 

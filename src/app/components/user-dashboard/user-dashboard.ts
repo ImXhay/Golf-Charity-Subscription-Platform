@@ -64,9 +64,11 @@ export class UserDashboard implements OnInit {
         ).toLocaleDateString(),
       });
       this.recentScores.set(await this.supabase.getRecentScores(this.user.id));
+      this.availableCharities.set(await this.supabase.getCharities());
+
       const latestClaim = await this.supabase.getUserLatestClaim(this.user.id);
       let currentPaymentStatus = 'None';
-      
+
       const totalWon = profile.total_won || 0;
       const totalPaid = profile.total_paid || 0;
 
@@ -86,8 +88,6 @@ export class UserDashboard implements OnInit {
         totalWon: totalWon,
         paymentStatus: currentPaymentStatus,
       });
-
-      this.availableCharities.set(await this.supabase.getCharities());
     }
   }
 
@@ -100,6 +100,7 @@ export class UserDashboard implements OnInit {
       await this.refreshData();
     }
   }
+
   async editScore(score: any) {
     const newScore = parseInt(
       prompt(`Edit score (currently ${score.score_value}):`, score.score_value) || '0',
@@ -125,7 +126,6 @@ export class UserDashboard implements OnInit {
       this.statusMessage.set(
         `✅ Charity updated to ${charity.name} at ${this.charityPercentage()}%`,
       );
-
       setTimeout(() => this.statusMessage.set(''), 3000);
     }
   }
@@ -135,26 +135,21 @@ export class UserDashboard implements OnInit {
       alert('Please select a charity from the grid to support first!');
       return;
     }
-
-    console.log(`Routing to Stripe for $20 donation to: ${charityName}`);
     window.location.href = 'https://buy.stripe.com/test_6oU00j0Y09oJdax8DD5os02';
   }
 
   async subscribeToPlatform() {
     this.isUpdatingSubscription.set(true);
-
+    // Passing the user.id tells Stripe exactly who is checking out!
     if (this.subscriptionPlan() === 'Yearly') {
-      window.location.href = 'https://buy.stripe.com/test_28EbJ18qsdEZ6M9f215os01';
+      window.location.href = `https://buy.stripe.com/test_28EbJ18qsdEZ6M9f215os01?client_reference_id=${this.user.id}`;
     } else {
-      window.location.href = 'https://buy.stripe.com/test_7sY6oH8qs7gB3zX5rr5os00';
+      window.location.href = `https://buy.stripe.com/test_7sY6oH8qs7gB3zX5rr5os00?client_reference_id=${this.user.id}`;
     }
   }
-
   onFileSelected(event: any) {
     const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-    }
+    if (file) this.selectedFile = file;
   }
 
   async submitProof() {
@@ -172,13 +167,15 @@ export class UserDashboard implements OnInit {
           ? '✅ Proof submitted successfully! Please wait while we review.'
           : '❌ Failed to register claim.',
       );
-      if (claimOk) this.selectedFile = null; // Reset on success
+      if (claimOk) this.selectedFile = null;
+      await this.refreshData();
     } else {
       this.uploadStatus.set('❌ Upload failed: ' + uploadRes.error);
     }
 
     this.isUploading.set(false);
   }
+
   async logout() {
     await this.supabase.logout();
   }

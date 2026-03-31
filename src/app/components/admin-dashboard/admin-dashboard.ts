@@ -2,6 +2,8 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Supabase } from '../../services/supabase';
+import { AdminState } from '../../services/admin-state';
+;
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -19,9 +21,9 @@ export class AdminDashboard implements OnInit {
 
   isProcessing = signal(false);
   statusMsg = signal('');
-  newName = '';
-  newDesc = '';
-
+  
+  selectedCharityFile: File | null = null;
+  
   showWinnerModal = false;
   totalWinners = 0;
   totalPool = 0;
@@ -29,10 +31,16 @@ export class AdminDashboard implements OnInit {
   lastWinningNumbers: number[] = [];
   winnerDetails: any = null;
 
-  charityTotals: { name: string; amount: number; donors: number }[] = [];
-  MONTHLY_SUB_FEE = 10;
+  showScoreModal = false;
+  editingUser: any = null;
+  editingUserScores: any[] = [];
 
-  constructor(private supabase: Supabase) {}
+  charityTotals: { name: string; amount: number; donors: number }[] = [];
+
+  constructor(
+    private supabase: Supabase,
+    public adminState: AdminState
+  ) {}
 
   async ngOnInit() {
     await this.loadData();
@@ -45,9 +53,9 @@ export class AdminDashboard implements OnInit {
     this.draws.set(await this.supabase.getLatestDraws());
     this.calculateCharityContributions();
   }
+
   calculateCharityContributions() {
     const totals: Record<string, { name: string; amount: number; donors: number }> = {};
-
     const MONTHLY_FEE = 10;
     const YEARLY_FEE_MONTHLY_EQUIVALENT = 8;
 
@@ -55,16 +63,10 @@ export class AdminDashboard implements OnInit {
       if (user.is_subscribed && user.charities?.name) {
         const charityName = user.charities.name;
         const percentage = user.charity_percentage || 10;
-
-        const baseFee =
-          user.subscription_plan === 'Yearly' ? YEARLY_FEE_MONTHLY_EQUIVALENT : MONTHLY_FEE;
-
+        const baseFee = user.subscription_plan === 'Yearly' ? YEARLY_FEE_MONTHLY_EQUIVALENT : MONTHLY_FEE;
         const contribution = baseFee * (percentage / 100);
 
-        if (!totals[charityName]) {
-          totals[charityName] = { name: charityName, amount: 0, donors: 0 };
-        }
-
+        if (!totals[charityName]) totals[charityName] = { name: charityName, amount: 0, donors: 0 };
         totals[charityName].amount += contribution;
         totals[charityName].donors += 1;
       }
@@ -74,9 +76,7 @@ export class AdminDashboard implements OnInit {
   }
 
   async runDraw(isSimulation: boolean) {
-    const confirmMessage = isSimulation
-      ? `Run a ${this.drawType.toUpperCase()} simulation?`
-      : `Execute OFFICIAL ${this.drawType.toUpperCase()} draw?`;
+    const confirmMessage = isSimulation ? `Run a ${this.drawType.toUpperCase()} simulation?` : `Execute OFFICIAL ${this.drawType.toUpperCase()} draw?`;
     if (!confirm(confirmMessage)) return;
 
     this.isProcessing.set(true);
@@ -89,12 +89,8 @@ export class AdminDashboard implements OnInit {
         this.totalPool = res.totalPool;
         this.rolloverAmount = res.rolloverAmount;
         this.lastWinningNumbers = res.winningNumbers;
-
         this.showWinnerModal = true;
-
-        if (!isSimulation) {
-          await this.loadData();
-        }
+        if (!isSimulation) await this.loadData();
       } else {
         alert('Draw failed: ' + res.error);
       }
@@ -112,13 +108,30 @@ export class AdminDashboard implements OnInit {
     }
   }
 
+  onCharityFileSelected(event: any) {
+    this.selectedCharityFile = event.target.files[0];
+  }
+
   async addNewCharity() {
-    if (await this.supabase.addCharity(this.newName, this.newDesc)) {
-      this.newName = '';
-      this.newDesc = '';
+    this.isProcessing.set(true);
+    let imageUrl = null;
+
+    if (this.selectedCharityFile) {
+      const uploadRes = await this.supabase.uploadCharityImage(this.selectedCharityFile);
+      if (uploadRes.success) imageUrl = uploadRes.url;
+    }
+
+    if (await this.supabase.addCharity(this.adminState.newCharityName, this.adminState.newCharityDesc, imageUrl)) {
+      this.adminState.newCharityName = '';
+      this.adminState.newCharityDesc = '';
+      this.selectedCharityFile = null;
+      this.statusMsg.set('✅ Charity added successfully!');
+      setTimeout(() => this.statusMsg.set(''), 3000);
       await this.loadData();
     }
+    this.isProcessing.set(false);
   }
+
   async editCharity(c: any) {
     const newName = prompt('Edit Charity Name:', c.name) || c.name;
     const newDesc = prompt('Edit Charity Description:', c.description) || c.description;
@@ -138,36 +151,33 @@ export class AdminDashboard implements OnInit {
       if (await this.supabase.adminUpdateProfile(u.id, newStatus)) await this.loadData();
     }
   }
-  async editUserScores(user: any) {
-    const userScores = await this.supabase.getRecentScores(user.id);
 
-    if (!userScores || userScores.length === 0) {
-      alert(`${user.email} has no submitted scores yet.`);
-      return;
-    }
-
-    const latestScore = userScores[0];
-    const newScore = parseInt(
-      prompt(
-        `Editing latest score for ${user.email} (currently ${latestScore.score_value}):`,
-        latestScore.score_value,
-      ) || '0',
-    );
-
-    if (newScore >= 1 && newScore <= 45) {
-      if (await this.supabase.updateScore(latestScore.id, newScore)) {
-        alert('Score updated successfully!');
-      } else {
-        alert('Failed to update score.');
-      }
-    } else {
-      alert('Score must be between 1 and 45.');
-    }
+  async openUserScores(user: any) {
+    this.editingUser = user;
+    this.editingUserScores = await this.supabase.getRecentScores(user.id);
+    this.showScoreModal = true;
   }
 
+  closeScoreModal() {
+    this.showScoreModal = false;
+    this.editingUser = null;
+  }
+
+  async saveAdminScore(score: any) {
+    const newScore = parseInt(prompt(`Edit score for ${this.editingUser.email} (currently ${score.score_value}):`, score.score_value) || '0');
+    if (newScore >= 1 && newScore <= 45) {
+      if (await this.supabase.updateScore(score.id, newScore)) {
+        this.editingUserScores = await this.supabase.getRecentScores(this.editingUser.id);
+      }
+    } else {
+      alert('Invalid score. Must be between 1 and 45.');
+    }
+  }
+  
   closeWinnerModal() {
     this.showWinnerModal = false;
   }
+
   async logout() {
     await this.supabase.logout();
   }
