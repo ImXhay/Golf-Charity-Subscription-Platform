@@ -506,7 +506,7 @@
           No winners. Jackpot rolls over to next month.
         </div>
         <div
-          *ngFor="let email of winnerDetails.tier5"
+          *ngFor="let winner of winnerDetails.tier5"
           style="
             background: #222;
             padding: 10px;
@@ -517,7 +517,7 @@
             font-family: monospace;
           "
         >
-          {{ email }}
+          {{ winner.email }}
         </div>
       </div>
 
@@ -532,7 +532,7 @@
           No winners this tier.
         </div>
         <div
-          *ngFor="let email of winnerDetails.tier4"
+          *ngFor="let winner of winnerDetails.tier4"
           style="
             background: #222;
             padding: 10px;
@@ -543,7 +543,7 @@
             font-family: monospace;
           "
         >
-          {{ email }}
+          {{ winner.email }}
         </div>
       </div>
 
@@ -558,7 +558,7 @@
           No winners this tier.
         </div>
         <div
-          *ngFor="let email of winnerDetails.tier3"
+          *ngFor="let winner of winnerDetails.tier3"
           style="
             background: #222;
             padding: 10px;
@@ -569,7 +569,7 @@
             font-family: monospace;
           "
         >
-          {{ email }}
+          {{ winner.email }}
         </div>
       </div>
     </div>

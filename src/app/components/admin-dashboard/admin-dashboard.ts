@@ -138,7 +138,33 @@ export class AdminDashboard implements OnInit {
       if (await this.supabase.adminUpdateProfile(u.id, newStatus)) await this.loadData();
     }
   }
-  
+  async editUserScores(user: any) {
+    const userScores = await this.supabase.getRecentScores(user.id);
+
+    if (!userScores || userScores.length === 0) {
+      alert(`${user.email} has no submitted scores yet.`);
+      return;
+    }
+
+    const latestScore = userScores[0];
+    const newScore = parseInt(
+      prompt(
+        `Editing latest score for ${user.email} (currently ${latestScore.score_value}):`,
+        latestScore.score_value,
+      ) || '0',
+    );
+
+    if (newScore >= 1 && newScore <= 45) {
+      if (await this.supabase.updateScore(latestScore.id, newScore)) {
+        alert('Score updated successfully!');
+      } else {
+        alert('Failed to update score.');
+      }
+    } else {
+      alert('Score must be between 1 and 45.');
+    }
+  }
+
   closeWinnerModal() {
     this.showWinnerModal = false;
   }

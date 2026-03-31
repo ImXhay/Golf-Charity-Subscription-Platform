@@ -64,8 +64,29 @@ export class UserDashboard implements OnInit {
         ).toLocaleDateString(),
       });
       this.recentScores.set(await this.supabase.getRecentScores(this.user.id));
-      this.winnings.set({ totalWon: profile.total_won || 0, paymentStatus: profile.total_won > 0 ? 'Pending Claim' : 'None' });
+      const latestClaim = await this.supabase.getUserLatestClaim(this.user.id);
+      let currentPaymentStatus = 'None';
       
+      const totalWon = profile.total_won || 0;
+      const totalPaid = profile.total_paid || 0;
+
+      if (totalWon > totalPaid) {
+        if (latestClaim && latestClaim.status === 'Pending') {
+          currentPaymentStatus = 'Pending';
+        } else if (latestClaim && latestClaim.status === 'Rejected') {
+          currentPaymentStatus = 'Rejected';
+        } else {
+          currentPaymentStatus = 'Action Required: Submit Proof';
+        }
+      } else if (totalWon > 0 && totalWon === totalPaid) {
+        currentPaymentStatus = 'Paid';
+      }
+
+      this.winnings.set({
+        totalWon: totalWon,
+        paymentStatus: currentPaymentStatus,
+      });
+
       this.availableCharities.set(await this.supabase.getCharities());
     }
   }

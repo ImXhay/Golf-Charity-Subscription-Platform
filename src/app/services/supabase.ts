@@ -208,7 +208,6 @@ export class Supabase {
     }
   }
 
-  // 2 & 3. Missing CRUD Operations for Admin & User
   async updateScore(scoreId: string, newScore: number) {
     if (newScore < 1 || newScore > 45) return false;
     const { error } = await this.client
@@ -252,7 +251,18 @@ export class Supabase {
   }
 
   async updateClaimStatus(id: string, status: string) {
-    return !(await this.client.from('winner_claims').update({ status }).eq('id', id)).error;
+    const { error } = await this.client.from('winner_claims').update({ status }).eq('id', id);
+
+    if (status === 'Paid' && !error) {
+      const { data: claim } = await this.client.from('winner_claims').select('profile_id').eq('id', id).single();
+      
+      if (claim) {
+        const { data: profile } = await this.client.from('profiles').select('total_won').eq('id', claim.profile_id).single();
+        
+        await this.client.from('profiles').update({ total_paid: profile?.total_won || 0 }).eq('id', claim.profile_id);
+      }
+    }
+    return !error;
   }
 
   async getLatestDraws() {
@@ -286,5 +296,18 @@ export class Supabase {
       },
     ]);
     return !error;
+  }
+
+  async getUserLatestClaim(userId: string) {
+    const { data, error } = await this.client
+      .from('winner_claims')
+      .select('*')
+      .eq('profile_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) return null;
+    return data;
   }
 }
