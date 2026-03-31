@@ -15,6 +15,7 @@ export class AdminDashboard implements OnInit {
   charities = signal<any[]>([]);
   claims = signal<any[]>([]);
   draws = signal<any[]>([]);
+  drawType: 'random' | 'algorithmic' = 'random';
 
   isProcessing = signal(false);
   statusMsg = signal('');
@@ -74,15 +75,13 @@ export class AdminDashboard implements OnInit {
 
   async runDraw(isSimulation: boolean) {
     const confirmMessage = isSimulation
-      ? 'Run a simulation of the monthly draw? No data will be saved.'
-      : 'WARNING: Execute the OFFICIAL monthly draw? This will save results and notify winners.';
-
+      ? `Run a ${this.drawType.toUpperCase()} simulation?`
+      : `Execute OFFICIAL ${this.drawType.toUpperCase()} draw?`;
     if (!confirm(confirmMessage)) return;
 
     this.isProcessing.set(true);
-
     try {
-      const res = await this.supabase.runMonthlyDraw(isSimulation);
+      const res = await this.supabase.runMonthlyDraw(isSimulation, this.drawType);
 
       if (res.success) {
         this.winnerDetails = res.details;
@@ -120,6 +119,11 @@ export class AdminDashboard implements OnInit {
       await this.loadData();
     }
   }
+  async editCharity(c: any) {
+    const newName = prompt('Edit Charity Name:', c.name) || c.name;
+    const newDesc = prompt('Edit Charity Description:', c.description) || c.description;
+    if (await this.supabase.adminUpdateCharity(c.id, newName, newDesc)) await this.loadData();
+  }
 
   async removeCharity(id: string, name: string) {
     if (confirm(`Delete ${name}?`)) {
@@ -128,6 +132,13 @@ export class AdminDashboard implements OnInit {
     }
   }
 
+  async toggleSubscription(u: any) {
+    const newStatus = !u.is_subscribed;
+    if (confirm(`Change ${u.email} subscription to ${newStatus ? 'Active' : 'Inactive'}?`)) {
+      if (await this.supabase.adminUpdateProfile(u.id, newStatus)) await this.loadData();
+    }
+  }
+  
   closeWinnerModal() {
     this.showWinnerModal = false;
   }

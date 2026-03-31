@@ -92,16 +92,45 @@ export class Supabase {
     return !error;
   }
 
-  async runMonthlyDraw(isSimulation: boolean = false): Promise<any> {
+  async runMonthlyDraw(
+    isSimulation: boolean = false,
+    drawType: 'random' | 'algorithmic' = 'random',
+  ): Promise<any> {
     try {
       const { data: subs } = await this.client
         .from('profiles')
         .select('id, email')
         .eq('is_subscribed', true);
-      const winNums = Array.from({ length: 5 }, () => Math.floor(Math.random() * 45) + 1);
-      const pool = (subs?.length || 0) * 10;
 
-      const winners: { tier5: string[]; tier4: string[]; tier3: string[] } = {
+      let winNums: number[] = [];
+
+      //Weight by most frequent user scores
+      if (drawType === 'algorithmic') {
+        const { data: allScores } = await this.client.from('scores').select('score_value');
+        const freq: Record<number, number> = {};
+        allScores?.forEach((s) => (freq[s.score_value] = (freq[s.score_value] || 0) + 1));
+
+        // Sort numbers by frequency (highest first)
+        const sortedByFreq = Object.keys(freq)
+          .map(Number)
+          .sort((a, b) => freq[b] - freq[a]);
+
+        winNums = sortedByFreq.slice(0, 5);
+        // Fill remaining if less than 5 scores exist in DB
+        while (winNums.length < 5) {
+          const r = Math.floor(Math.random() * 45) + 1;
+          if (!winNums.includes(r)) winNums.push(r);
+        }
+      } else {
+        // Generate 5 unique numbers
+        while (winNums.length < 5) {
+          const r = Math.floor(Math.random() * 45) + 1;
+          if (!winNums.includes(r)) winNums.push(r);
+        }
+      }
+
+      const pool = (subs?.length || 0) * 10;
+      const winners: { tier5: any[]; tier4: any[]; tier3: any[] } = {
         tier5: [],
         tier4: [],
         tier3: [],
@@ -117,25 +146,51 @@ export class Supabase {
             const userScores = scores.map((s) => s.score_value);
             const matchCount = userScores.filter((s) => winNums.includes(s)).length;
 
-            if (matchCount === 5) winners.tier5.push(sub.email);
-            else if (matchCount === 4) winners.tier4.push(sub.email);
-            else if (matchCount === 3) winners.tier3.push(sub.email);
+            if (matchCount === 5) winners.tier5.push(sub);
+            else if (matchCount === 4) winners.tier4.push(sub);
+            else if (matchCount === 3) winners.tier3.push(sub);
           }
         }
       }
 
+      // PRIZE MATH
       let rollover = 0;
-      if (winners.tier5.length === 0) rollover = pool * 0.4;
+      const tier5Payout = winners.tier5.length > 0 ? (pool * 0.4) / winners.tier5.length : 0;
+      const tier4Payout = winners.tier4.length > 0 ? (pool * 0.35) / winners.tier4.length : 0;
+      const tier3Payout = winners.tier3.length > 0 ? (pool * 0.25) / winners.tier3.length : 0;
+
+      if (winners.tier5.length === 0) rollover = pool * 0.4; // 40% rollover if no jackpot winner
 
       if (!isSimulation) {
+        // Save draw results
         const { error } = await this.client.from('monthly_draws').insert([
           {
             winning_numbers: winNums,
             total_pool: pool,
             rollover_amount: rollover,
+            draw_type: drawType,
           },
         ]);
         if (error) throw error;
+
+        const awardPrizes = async (winnerArray: any[], payout: number) => {
+          for (const w of winnerArray) {
+            const { data: profile } = await this.client
+              .from('profiles')
+              .select('total_won')
+              .eq('id', w.id)
+              .single();
+            const currentTotal = profile?.total_won || 0;
+            await this.client
+              .from('profiles')
+              .update({ total_won: currentTotal + payout })
+              .eq('id', w.id);
+          }
+        };
+
+        await awardPrizes(winners.tier5, tier5Payout);
+        await awardPrizes(winners.tier4, tier4Payout);
+        await awardPrizes(winners.tier3, tier3Payout);
       }
 
       return {
@@ -146,10 +201,37 @@ export class Supabase {
         totalWinners: winners.tier5.length + winners.tier4.length + winners.tier3.length,
         rolloverAmount: rollover,
         details: winners,
+        payouts: { tier5: tier5Payout, tier4: tier4Payout, tier3: tier3Payout },
       };
     } catch (e: any) {
       return { success: false, error: e.message };
     }
+  }
+
+  // 2 & 3. Missing CRUD Operations for Admin & User
+  async updateScore(scoreId: string, newScore: number) {
+    if (newScore < 1 || newScore > 45) return false;
+    const { error } = await this.client
+      .from('scores')
+      .update({ score_value: newScore })
+      .eq('id', scoreId);
+    return !error;
+  }
+
+  async adminUpdateProfile(userId: string, isSubscribed: boolean) {
+    const { error } = await this.client
+      .from('profiles')
+      .update({ is_subscribed: isSubscribed })
+      .eq('id', userId);
+    return !error;
+  }
+
+  async adminUpdateCharity(charityId: string, name: string, description: string) {
+    const { error } = await this.client
+      .from('charities')
+      .update({ name, description })
+      .eq('id', charityId);
+    return !error;
   }
 
   async getRecentScores(userId: string) {

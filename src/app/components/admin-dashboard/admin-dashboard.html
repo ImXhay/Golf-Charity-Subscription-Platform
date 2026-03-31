@@ -48,7 +48,14 @@
         Execute the algorithm to select winning numbers and notify users.
       </p>
     </div>
-    <div style="display: flex; gap: 15px">
+    
+    <div style="display: flex; gap: 15px; align-items: center;">
+      <select 
+        [(ngModel)]="drawType" 
+        style="padding: 14px; border-radius: 8px; background: #222; color: #00ffcc; border: 1px solid #333; outline: none; cursor: pointer; font-weight: bold;">
+        <option value="random">🎲 Random Draw</option>
+        <option value="algorithmic">🧠 Algorithmic Draw</option>
+      </select>
       <button
         (click)="runDraw(true)"
         [disabled]="isProcessing()"
@@ -80,6 +87,7 @@
       </button>
     </div>
   </div>
+  
   <div
     style="
       display: grid;
@@ -199,24 +207,39 @@
               >{{ charity.description }}</span
             >
           </div>
-          <button
-            (click)="removeCharity(charity.id, charity.name)"
-            style="
-              background: rgba(255, 77, 77, 0.1);
-              color: #ff4d4d;
-              border: 1px solid rgba(255, 77, 77, 0.3);
-              padding: 6px 12px;
-              border-radius: 4px;
-              cursor: pointer;
-              font-size: 0.85rem;
-            "
-          >
-            Delete
-          </button>
+          
+          <div style="display: flex; gap: 8px;">
+            <button 
+              (click)="editCharity(charity)" 
+              style="background: transparent; color: #ffcc00; border: 1px solid rgba(255, 204, 0, 0.4); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: 0.2s;"
+              onmouseover="this.style.background='rgba(255, 204, 0, 0.1)'"
+              onmouseout="this.style.background='transparent'"
+            >
+              Edit
+            </button>
+            <button
+              (click)="removeCharity(charity.id, charity.name)"
+              style="
+                background: rgba(255, 77, 77, 0.1);
+                color: #ff4d4d;
+                border: 1px solid rgba(255, 77, 77, 0.3);
+                padding: 6px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.85rem;
+                transition: 0.2s;
+              "
+              onmouseover="this.style.background='rgba(255, 77, 77, 0.2)'"
+              onmouseout="this.style.background='rgba(255, 77, 77, 0.1)'"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
+  
   <h2 style="margin-top: 40px">Reports & Analytics: Charity Payouts</h2>
   <div
     style="
@@ -265,6 +288,7 @@
       </div>
     </div>
   </div>
+  
   <h2 style="margin-top: 40px">Pending Verifications</h2>
   <div
     style="
@@ -361,11 +385,12 @@
           <th style="padding: 15px; color: #aaa; font-weight: normal">Email</th>
           <th style="padding: 15px; color: #aaa; font-weight: normal">Status</th>
           <th style="padding: 15px; color: #aaa; font-weight: normal">Supported Charity</th>
+          <th style="padding: 15px; color: #aaa; font-weight: normal">Manage</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngIf="users().length === 0">
-          <td colspan="3" style="padding: 20px; text-align: center; color: #555">
+          <td colspan="4" style="padding: 20px; text-align: center; color: #555">
             No users found.
           </td>
         </tr>
@@ -377,6 +402,25 @@
             }}</span>
           </td>
           <td style="padding: 15px; color: #888">{{ u.charities?.name || 'None selected' }}</td>
+          
+          <td style="padding: 15px">
+            <button 
+              (click)="toggleSubscription(u)" 
+              style="
+                background: transparent; 
+                border: 1px solid #555; 
+                color: #fff; 
+                padding: 6px 12px; 
+                border-radius: 4px; 
+                cursor: pointer;
+                transition: 0.2s;
+              "
+              onmouseover="this.style.background='#333'; this.style.borderColor='#888'"
+              onmouseout="this.style.background='transparent'; this.style.borderColor='#555'"
+            >
+               Toggle Sub
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>

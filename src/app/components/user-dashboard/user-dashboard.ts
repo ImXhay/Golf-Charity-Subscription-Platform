@@ -15,7 +15,14 @@ export class UserDashboard implements OnInit {
 
   profileData = signal<any>(null);
   recentScores = signal<any[]>([]);
+
   availableCharities = signal<any[]>([]);
+  filteredCharities = computed(() => {
+    const query = this.charitySearch().toLowerCase();
+    return this.availableCharities().filter(
+      (c) => c.name.toLowerCase().includes(query) || c.description.toLowerCase().includes(query),
+    );
+  });
   selectedCharity = signal<any>(null);
 
   currentScore: number | null = null;
@@ -30,6 +37,8 @@ export class UserDashboard implements OnInit {
 
   subscriptionPlan = signal<'Monthly' | 'Yearly'>('Monthly');
   charityPercentage = signal<number>(10);
+
+  charitySearch = signal('');
 
   selectedFile: File | null = null;
   uploadStatus = signal('');
@@ -55,6 +64,8 @@ export class UserDashboard implements OnInit {
         ).toLocaleDateString(),
       });
       this.recentScores.set(await this.supabase.getRecentScores(this.user.id));
+      this.winnings.set({ totalWon: profile.total_won || 0, paymentStatus: profile.total_won > 0 ? 'Pending Claim' : 'None' });
+      
       this.availableCharities.set(await this.supabase.getCharities());
     }
   }
@@ -66,6 +77,19 @@ export class UserDashboard implements OnInit {
     if (ok) {
       this.currentScore = null;
       await this.refreshData();
+    }
+  }
+  async editScore(score: any) {
+    const newScore = parseInt(
+      prompt(`Edit score (currently ${score.score_value}):`, score.score_value) || '0',
+    );
+    if (newScore >= 1 && newScore <= 45) {
+      if (await this.supabase.updateScore(score.id, newScore)) {
+        this.statusMessage.set('✅ Score Updated!');
+        await this.refreshData();
+      }
+    } else {
+      alert('Score must be between 1 and 45.');
     }
   }
 

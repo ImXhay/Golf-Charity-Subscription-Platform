@@ -267,16 +267,16 @@
       
       <div
         style="
-          background: #111;
-          padding: 35px;
-          border-radius: 24px;
-          border: 1px solid #222;
+          background: #1a1a1a;
+          padding: 25px;
+          border-radius: 16px;
+          border: 1px dashed #333;
           box-sizing: border-box;
-          margin-bottom: 40px;
+          margin-bottom: 30px;
         "
       >
-        <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffcc00">🏆 Claim Your Winnings</h3>
-        <p style="color: #666; margin-bottom: 25px; font-size: 0.9rem">
+        <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; color: #ffcc00">🏆 Claim Your Winnings</h3>
+        <p style="color: #666; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.5;">
           Matched numbers in the latest draw? Upload a screenshot of your official golf app to
           verify your submitted scores and initiate your payout.
         </p>
@@ -288,12 +288,12 @@
           style="
             width: 100%;
             box-sizing: border-box;
-            padding: 15px;
+            padding: 12px;
             background: #0a0a0a;
             border: 2px dashed #333;
             border-radius: 12px;
             color: #aaa;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             outline: none;
             cursor: pointer;
           "
@@ -304,11 +304,11 @@
           [disabled]="!selectedFile || isUploading()"
           style="
             width: 100%;
-            padding: 18px;
+            padding: 14px;
             border: none;
-            border-radius: 16px;
+            border-radius: 12px;
             font-weight: 800;
-            font-size: 1.1rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: 0.3s;
           "
@@ -338,19 +338,40 @@
         "
       >
         <span style="color: #666; font-size: 0.9rem">{{ s.created_at | date: 'MMM d, y' }}</span>
-        <div
-          style="
-            background: rgba(0, 255, 204, 0.1);
-            color: #00ffcc;
-            padding: 5px 12px;
-            border-radius: 8px;
-            font-weight: 800;
-            font-size: 0.85rem;
-          "
-        >
-          +{{ s.score_value }}
+        
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div
+            style="
+              background: rgba(0, 255, 204, 0.1);
+              color: #00ffcc;
+              padding: 5px 12px;
+              border-radius: 8px;
+              font-weight: 800;
+              font-size: 0.85rem;
+            "
+          >
+            +{{ s.score_value }}
+          </div>
+          <button
+            (click)="editScore(s)"
+            style="
+              background: transparent;
+              color: #888;
+              border: 1px dashed #555;
+              border-radius: 6px;
+              padding: 4px 8px;
+              cursor: pointer;
+              font-size: 0.8rem;
+              transition: 0.2s;
+            "
+            onmouseover="this.style.color='#fff'; this.style.borderColor='#fff'"
+            onmouseout="this.style.color='#888'; this.style.borderColor='#555'"
+          >
+            Edit
+          </button>
         </div>
       </div>
+      
       <div
         *ngIf="recentScores().length === 0"
         style="color: #444; text-align: center; padding: 20px"
@@ -364,11 +385,27 @@
     <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 30px; letter-spacing: -1px">
       Select Your Impact
     </h2>
+    <input
+      type="text"
+      [(ngModel)]="charitySearch"
+      placeholder="🔍 Search charities by name or description..."
+      style="
+        width: 100%;
+        box-sizing: border-box;
+        padding: 15px;
+        background: #111;
+        border: 1px solid #333;
+        color: white;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        outline: none;
+      "
+    />
     <div
       style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px"
     >
       <div
-        *ngFor="let charity of availableCharities()"
+        *ngFor="let charity of filteredCharities()"
         (click)="selectCharity(charity)"
         [style.border-color]="selectedCharity()?.id === charity.id ? '#00ffcc' : '#222'"
         [style.background]="selectedCharity()?.id === charity.id ? 'rgba(0,255,204,0.02)' : '#111'"
@@ -406,13 +443,20 @@
           text-align: center;
           transition: 0.3s;
         "
-        onmouseover="this.style.borderColor='#00ffcc'; this.style.transform='translateY(-4px)'"
-        onmouseout="this.style.borderColor='#333'; this.style.transform='translateY(0)'"
+        onmouseover="
+          this.style.borderColor = '#00ffcc';
+          this.style.transform = 'translateY(-4px)';
+        "
+        onmouseout="
+          this.style.borderColor = '#333';
+          this.style.transform = 'translateY(0)';
+        "
       >
-        <div style="font-size: 1.5rem; margin-bottom: 10px;">🎁</div>
-        <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;">Extra Support</h4>
-        <p style="color: #666; font-size: 0.8rem; margin: 10px 0 15px 0; line-height: 1.5;">
-          Make a one-time gift to {{ selectedCharity()?.name || 'the cause' }} (not tied to gameplay).
+        <div style="font-size: 1.5rem; margin-bottom: 10px">🎁</div>
+        <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff">Extra Support</h4>
+        <p style="color: #666; font-size: 0.8rem; margin: 10px 0 15px 0; line-height: 1.5">
+          Make a one-time gift to {{ selectedCharity()?.name || 'the cause' }} (not tied to
+          gameplay).
         </p>
         <button
           (click)="donateDirectly(selectedCharity()?.name)"
@@ -427,8 +471,8 @@
             width: 100%;
             transition: 0.2s;
           "
-          onmouseover="this.style.filter='brightness(1.1)'"
-          onmouseout="this.style.filter='none'"
+          onmouseover="this.style.filter = 'brightness(1.1)'"
+          onmouseout="this.style.filter = 'none'"
         >
           Donate Now
         </button>
