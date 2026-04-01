@@ -20,17 +20,17 @@ export class Supabase {
   async signUp(email: string, pass: string, charityId: string) {
     const { data, error } = await this.client.auth.signUp({ email, password: pass });
     if (error || !data.user) return { success: false, error: error?.message };
-    const { error: pErr } = await this.client
-      .from('profiles')
-      .insert([
-        {
-          id: data.user.id,
-          email,
-          selected_charity_id: charityId,
-          is_subscribed: false,
-          total_paid: 0,
-        },
-      ]);
+
+    const { error: pErr } = await this.client.from('profiles').upsert([
+      {
+        id: data.user.id,
+        email: email,
+        selected_charity_id: charityId,
+        is_subscribed: false,
+        total_paid: 0,
+      },
+    ]);
+
     return { success: !pErr, user: data.user, error: pErr?.message };
   }
 
@@ -52,13 +52,9 @@ export class Supabase {
   }
 
   async addCharity(name: string, description: string, imageUrl?: string | null) {
-    const { error } = await this.client.from('charities').insert([
-      {
-        name,
-        description,
-        image_url: imageUrl,
-      },
-    ]);
+    const { error } = await this.client
+      .from('charities')
+      .insert([{ name, description, image_url: imageUrl }]);
     return !error;
   }
 
@@ -229,7 +225,6 @@ export class Supabase {
   ) {
     const updatePayload: any = { name, description };
     if (imageUrl) updatePayload.image_url = imageUrl;
-
     const { error } = await this.client.from('charities').update(updatePayload).eq('id', charityId);
     return !error;
   }
@@ -253,7 +248,6 @@ export class Supabase {
 
   async updateClaimStatus(id: string, status: string) {
     const { error } = await this.client.from('winner_claims').update({ status }).eq('id', id);
-
     if (status === 'Paid' && !error) {
       const { data: claim } = await this.client
         .from('winner_claims')
@@ -291,7 +285,6 @@ export class Supabase {
     const filePath = `proofs/${userId}_${Date.now()}_${file.name}`;
     const { error } = await this.client.storage.from('proofs').upload(filePath, file);
     if (error) return { success: false, error: error.message };
-
     const { data: publicUrlData } = this.client.storage.from('proofs').getPublicUrl(filePath);
     return { success: true, url: publicUrlData.publicUrl };
   }
@@ -319,7 +312,6 @@ export class Supabase {
     const filePath = `${Date.now()}_${file.name}`;
     const { error } = await this.client.storage.from('charities').upload(filePath, file);
     if (error) return { success: false, error: error.message };
-
     const { data } = this.client.storage.from('charities').getPublicUrl(filePath);
     return { success: true, url: data.publicUrl };
   }

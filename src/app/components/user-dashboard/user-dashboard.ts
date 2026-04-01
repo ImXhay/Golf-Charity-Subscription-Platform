@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Supabase } from '../../services/supabase';
@@ -11,7 +11,7 @@ import { Supabase } from '../../services/supabase';
   styleUrl: './user-dashboard.css',
 })
 export class UserDashboard implements OnInit {
-  @Input() user: any;
+  user: any = null;
 
   profileData = signal<any>(null);
   recentScores = signal<any[]>([]);
@@ -47,9 +47,7 @@ export class UserDashboard implements OnInit {
   constructor(private supabase: Supabase) {}
 
   async ngOnInit() {
-    const {
-      data: { user },
-    } = await this.supabase.client.auth.getUser();
+    const { data: { user } } = await this.supabase.client.auth.getUser();
 
     if (user?.id) {
       this.user = user;
@@ -58,17 +56,22 @@ export class UserDashboard implements OnInit {
       window.location.href = '/login';
     }
   }
+
   async refreshData() {
     const profile = await this.supabase.getProfile(this.user.id);
     if (profile) {
       this.profileData.set(profile);
+      
+      // THE FIX: Safely handle the date calculation even if the column is missing!
+      const safeDate = profile.created_at ? new Date(profile.created_at) : new Date();
+      const renewalTime = safeDate.getTime() + 30 * 24 * 60 * 60 * 1000;
+
       this.subStatus.set({
         plan: 'Monthly',
         active: profile.is_subscribed,
-        renewalDate: new Date(
-          new Date(profile.created_at).getTime() + 30 * 24 * 60 * 60 * 1000,
-        ).toLocaleDateString(),
+        renewalDate: new Date(renewalTime).toLocaleDateString(),
       });
+      
       this.recentScores.set(await this.supabase.getRecentScores(this.user.id));
       this.availableCharities.set(await this.supabase.getCharities());
 
@@ -94,6 +97,9 @@ export class UserDashboard implements OnInit {
         totalWon: totalWon,
         paymentStatus: currentPaymentStatus,
       });
+    } else {
+      alert('Your session is out of sync. Please log in again.');
+      await this.logout();
     }
   }
 
@@ -146,13 +152,13 @@ export class UserDashboard implements OnInit {
 
   async subscribeToPlatform() {
     this.isUpdatingSubscription.set(true);
-    // Passing the user.id tells Stripe exactly who is checking out!
     if (this.subscriptionPlan() === 'Yearly') {
       window.location.href = `https://buy.stripe.com/test_28EbJ18qsdEZ6M9f215os01?client_reference_id=${this.user.id}`;
     } else {
       window.location.href = `https://buy.stripe.com/test_7sY6oH8qs7gB3zX5rr5os00?client_reference_id=${this.user.id}`;
     }
   }
+  
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) this.selectedFile = file;

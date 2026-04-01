@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Supabase } from '../../services/supabase';
 
 @Component({
@@ -20,9 +21,18 @@ export class Login implements OnInit {
   selectedCharityId = '';
   charities = signal<any[]>([]);
 
-  constructor(private supabase: Supabase) {}
+  constructor(
+    private supabase: Supabase,
+    private route: ActivatedRoute,
+  ) {}
 
   async ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      if (params['mode'] === 'signup') {
+        this.isSignUp.set(true);
+      }
+    });
+
     const data = await this.supabase.getCharities();
     this.charities.set(data || []);
   }
@@ -59,7 +69,17 @@ export class Login implements OnInit {
         if (!res.success) {
           this.error.set(res.error || 'Invalid credentials.');
         } else {
-          window.location.href = '/';
+          const { data: profile } = await this.supabase.client
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', res.user?.id)
+            .single();
+
+          if (profile?.is_admin) {
+            window.location.href = '/admin-dashboard';
+          } else {
+            window.location.href = '/dashboard';
+          }
         }
       }
     } catch (err) {
