@@ -1,27 +1,18 @@
-<div *ngIf="!isAuthReady()" style="min-height: 100vh; background-color: #050505;"></div>
+<div *ngIf="!isAuthReady()" style="min-height: 100vh; background-color: #050505"></div>
 
 <ng-container *ngIf="isAuthReady()">
   <app-payment-success *ngIf="isSuccessPage()"></app-payment-success>
 
   <div *ngIf="!isSuccessPage()">
-    <app-landing-page 
-      *ngIf="!currentUser() && showLandingPage()" 
-      (navigateToAuth)="goToAuth()">
+    <app-landing-page *ngIf="!currentUser() && showLandingPage()" (navigateToAuth)="goToAuth()">
     </app-landing-page>
 
-    <app-login 
-      *ngIf="!currentUser() && !showLandingPage()">
-    </app-login>
+    <app-login *ngIf="!currentUser() && !showLandingPage()"> </app-login>
 
     <div *ngIf="currentUser()">
-      <app-user-dashboard 
-        *ngIf="userRole() !== 'admin'" 
-        [user]="currentUser()">
-      </app-user-dashboard>
+      <app-user-dashboard *ngIf="userRole() !== 'admin'"> </app-user-dashboard>
 
-      <app-admin-dashboard 
-        *ngIf="userRole() === 'admin'">
-      </app-admin-dashboard>
+      <app-admin-dashboard *ngIf="userRole() === 'admin'"> </app-admin-dashboard>
     </div>
   </div>
 </ng-container>

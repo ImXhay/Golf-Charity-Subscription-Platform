@@ -42,7 +42,7 @@ export class Login implements OnInit {
     this.error.set('');
   }
 
-  async handleAuth() {
+ async handleAuth() {
     if (!this.email || !this.password) {
       this.error.set('Please fill in all fields.');
       return;
@@ -71,12 +71,12 @@ export class Login implements OnInit {
         } else {
           const { data: profile } = await this.supabase.client
             .from('profiles')
-            .select('is_admin')
+            .select('role') 
             .eq('id', res.user?.id)
             .single();
 
-          if (profile?.is_admin) {
-            window.location.href = '/admin-dashboard';
+          if (profile?.role === 'admin') {
+            window.location.href = '/admin';
           } else {
             window.location.href = '/dashboard';
           }

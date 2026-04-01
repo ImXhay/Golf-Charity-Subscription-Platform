@@ -13,7 +13,6 @@ import { Supabase } from '../../services/supabase';
         <div style="font-size: 3rem; margin-bottom: 20px;">✅</div>
         <h1 style="margin: 0 0 10px 0;">Payment Successful!</h1>
         <p style="color: #888; line-height: 1.6;">Your subscription is being activated. Redirecting you to your dashboard...</p>
-        <div style="margin-top: 20px; border-top: 2px solid #00ffcc; width: 50px; margin-left: auto; margin-right: auto; animation: grow 1s infinite;"></div>
       </div>
     </div>
   `
@@ -33,30 +32,28 @@ export class PaymentSuccess implements OnInit {
 
   async processPayment() {
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const { data: { user }, error: authError } = await this.supabase.client.auth.getUser();
+      const { data: { user } } = await this.supabase.client.auth.getUser();
 
       if (user) {
-        const { error: dbError } = await this.supabase.client
+        // Calculate a date exactly 30 days from right now
+        const renewalDate = new Date();
+        renewalDate.setDate(renewalDate.getDate() + 30);
+
+        // Save BOTH the active status and the renewal date to the database
+        await this.supabase.client
           .from('profiles')
-          .update({ is_subscribed: true })
+          .update({ 
+            is_subscribed: true,
+            subscription_end_date: renewalDate.toISOString() 
+          })
           .eq('id', user.id);
-
-        if (dbError) {
-          console.error('Supabase RLS or Update Error:', dbError.message);
-          alert('Payment recorded, but profile update failed. Check database permissions.');
-        } else {
-          console.log('Subscription activated successfully!');
-        }
-      } else {
-        console.error('No active session found. User might need to log in again.');
       }
-
     } catch (err) {
-      console.error('Critical failure in payment success logic:', err);
+      console.error(err);
     } finally {
-      window.location.href = '/dashboard';
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 2000);
     }
   }
 }

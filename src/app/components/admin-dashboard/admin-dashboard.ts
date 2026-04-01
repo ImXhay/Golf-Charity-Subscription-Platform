@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Supabase } from '../../services/supabase';
 import { AdminState } from '../../services/admin-state';
-;
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -21,9 +20,9 @@ export class AdminDashboard implements OnInit {
 
   isProcessing = signal(false);
   statusMsg = signal('');
-  
+
   selectedCharityFile: File | null = null;
-  
+
   showWinnerModal = false;
   totalWinners = 0;
   totalPool = 0;
@@ -39,7 +38,7 @@ export class AdminDashboard implements OnInit {
 
   constructor(
     private supabase: Supabase,
-    public adminState: AdminState
+    public adminState: AdminState,
   ) {}
 
   async ngOnInit() {
@@ -63,7 +62,8 @@ export class AdminDashboard implements OnInit {
       if (user.is_subscribed && user.charities?.name) {
         const charityName = user.charities.name;
         const percentage = user.charity_percentage || 10;
-        const baseFee = user.subscription_plan === 'Yearly' ? YEARLY_FEE_MONTHLY_EQUIVALENT : MONTHLY_FEE;
+        const baseFee =
+          user.subscription_plan === 'Yearly' ? YEARLY_FEE_MONTHLY_EQUIVALENT : MONTHLY_FEE;
         const contribution = baseFee * (percentage / 100);
 
         if (!totals[charityName]) totals[charityName] = { name: charityName, amount: 0, donors: 0 };
@@ -76,7 +76,9 @@ export class AdminDashboard implements OnInit {
   }
 
   async runDraw(isSimulation: boolean) {
-    const confirmMessage = isSimulation ? `Run a ${this.drawType.toUpperCase()} simulation?` : `Execute OFFICIAL ${this.drawType.toUpperCase()} draw?`;
+    const confirmMessage = isSimulation
+      ? `Run a ${this.drawType.toUpperCase()} simulation?`
+      : `Execute OFFICIAL ${this.drawType.toUpperCase()} draw?`;
     if (!confirm(confirmMessage)) return;
 
     this.isProcessing.set(true);
@@ -121,7 +123,13 @@ export class AdminDashboard implements OnInit {
       if (uploadRes.success) imageUrl = uploadRes.url;
     }
 
-    if (await this.supabase.addCharity(this.adminState.newCharityName, this.adminState.newCharityDesc, imageUrl)) {
+    if (
+      await this.supabase.addCharity(
+        this.adminState.newCharityName,
+        this.adminState.newCharityDesc,
+        imageUrl,
+      )
+    ) {
       this.adminState.newCharityName = '';
       this.adminState.newCharityDesc = '';
       this.selectedCharityFile = null;
@@ -164,7 +172,12 @@ export class AdminDashboard implements OnInit {
   }
 
   async saveAdminScore(score: any) {
-    const newScore = parseInt(prompt(`Edit score for ${this.editingUser.email} (currently ${score.score_value}):`, score.score_value) || '0');
+    const newScore = parseInt(
+      prompt(
+        `Edit score for ${this.editingUser.email} (currently ${score.score_value}):`,
+        score.score_value,
+      ) || '0',
+    );
     if (newScore >= 1 && newScore <= 45) {
       if (await this.supabase.updateScore(score.id, newScore)) {
         this.editingUserScores = await this.supabase.getRecentScores(this.editingUser.id);
@@ -173,7 +186,7 @@ export class AdminDashboard implements OnInit {
       alert('Invalid score. Must be between 1 and 45.');
     }
   }
-  
+
   closeWinnerModal() {
     this.showWinnerModal = false;
   }

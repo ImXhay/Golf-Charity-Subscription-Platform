@@ -31,7 +31,7 @@ export class UserDashboard implements OnInit {
 
   drawStats = signal({ nextDraw: 'April 30, 2026', drawsEntered: 0 });
   winnings = signal({ totalWon: 0, paymentStatus: 'None' });
-  subStatus = signal({ plan: 'Monthly', active: false, renewalDate: 'Calculating...' });
+  subStatus = signal({ plan: 'Monthly', active: false, renewalDate: '' });
 
   totalEntries = computed(() => this.recentScores().length);
 
@@ -47,7 +47,9 @@ export class UserDashboard implements OnInit {
   constructor(private supabase: Supabase) {}
 
   async ngOnInit() {
-    const { data: { user } } = await this.supabase.client.auth.getUser();
+    const {
+      data: { user },
+    } = await this.supabase.client.auth.getUser();
 
     if (user?.id) {
       this.user = user;
@@ -58,20 +60,56 @@ export class UserDashboard implements OnInit {
   }
 
   async refreshData() {
-    const profile = await this.supabase.getProfile(this.user.id);
+    let profile = await this.supabase.getProfile(this.user.id);
+
+    if (!profile) {
+      await this.supabase.client.from('profiles').upsert([{
+        id: this.user.id,
+        email: this.user.email,
+        is_subscribed: false,
+        total_paid: 0,
+      }]);
+      profile = await this.supabase.getProfile(this.user.id);
+    }
+
     if (profile) {
       this.profileData.set(profile);
-      
-      // THE FIX: Safely handle the date calculation even if the column is missing!
-      const safeDate = profile.created_at ? new Date(profile.created_at) : new Date();
-      const renewalTime = safeDate.getTime() + 30 * 24 * 60 * 60 * 1000;
+
+      let calculatedRenewalDate = '';
+
+      // Define the Day Month Year format
+      const dateOptions: Intl.DateTimeFormatOptions = { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      };
+
+      if (profile.is_subscribed) {
+        if (profile.subscription_end_date) {
+          const endDate = new Date(profile.subscription_end_date);
+          
+          // Apply the formatting options here
+          calculatedRenewalDate = endDate.toLocaleDateString('en-GB', dateOptions);
+
+          // Expiration Check
+          if (new Date() > endDate) {
+            await this.supabase.client.from('profiles').update({ is_subscribed: false }).eq('id', this.user.id);
+            profile.is_subscribed = false;
+            calculatedRenewalDate = 'Expired';
+          }
+        } else {
+          calculatedRenewalDate = 'Pending...';
+        }
+      } else {
+        calculatedRenewalDate = 'N/A (Not Subscribed)';
+      }
 
       this.subStatus.set({
-        plan: 'Monthly',
+        plan: profile.subscription_plan || 'Monthly',
         active: profile.is_subscribed,
-        renewalDate: new Date(renewalTime).toLocaleDateString(),
+        renewalDate: calculatedRenewalDate,
       });
-      
+
       this.recentScores.set(await this.supabase.getRecentScores(this.user.id));
       this.availableCharities.set(await this.supabase.getCharities());
 
@@ -98,7 +136,7 @@ export class UserDashboard implements OnInit {
         paymentStatus: currentPaymentStatus,
       });
     } else {
-      alert('Your session is out of sync. Please log in again.');
+      alert('System Error: Could not generate profile.');
       await this.logout();
     }
   }
@@ -158,7 +196,7 @@ export class UserDashboard implements OnInit {
       window.location.href = `https://buy.stripe.com/test_7sY6oH8qs7gB3zX5rr5os00?client_reference_id=${this.user.id}`;
     }
   }
-  
+
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) this.selectedFile = file;
