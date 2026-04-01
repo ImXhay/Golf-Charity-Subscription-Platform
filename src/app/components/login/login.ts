@@ -8,7 +8,7 @@ import { Supabase } from '../../services/supabase';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class Login implements OnInit {
   email = '';
@@ -16,7 +16,7 @@ export class Login implements OnInit {
   error = signal('');
   isLoading = signal(false);
 
-  isSignUp = signal(false); 
+  isSignUp = signal(false);
   selectedCharityId = '';
   charities = signal<any[]>([]);
 
@@ -28,8 +28,8 @@ export class Login implements OnInit {
   }
 
   toggleMode() {
-    this.isSignUp.update(val => !val);
-    this.error.set(''); 
+    this.isSignUp.update((val) => !val);
+    this.error.set('');
   }
 
   async handleAuth() {
@@ -52,14 +52,14 @@ export class Login implements OnInit {
         if (!res.success) {
           this.error.set(res.error || 'Sign up failed.');
         } else {
-          window.location.reload(); 
+          window.location.href = '/dashboard';
         }
       } else {
         const res = await this.supabase.signIn(this.email, this.password);
         if (!res.success) {
           this.error.set(res.error || 'Invalid credentials.');
         } else {
-          window.location.href = '/'; 
+          window.location.href = '/';
         }
       }
     } catch (err) {

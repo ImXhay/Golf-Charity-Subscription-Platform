@@ -47,11 +47,17 @@ export class UserDashboard implements OnInit {
   constructor(private supabase: Supabase) {}
 
   async ngOnInit() {
-    if (this.user?.id) {
+    const {
+      data: { user },
+    } = await this.supabase.client.auth.getUser();
+
+    if (user?.id) {
+      this.user = user;
       await this.refreshData();
+    } else {
+      window.location.href = '/login';
     }
   }
-
   async refreshData() {
     const profile = await this.supabase.getProfile(this.user.id);
     if (profile) {
